@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/07/25 16:21:15 by mteerlin      #+#    #+#                 */
-/*   Updated: 2023/07/25 18:02:35 by mteerlin      ########   odam.nl         */
+/*   Updated: 2023/07/26 14:11:08 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define CHANNEL_HPP
 
 # include "ircserv.hpp"
+# include <vector>
 
 class Channel 
 {
@@ -30,8 +31,12 @@ class Channel
 		std::vector<Client> _members;
 		std::vector<Client> _operators;
 
+		bool	isMember(Client const & client);
+		bool	isOperator(Client const & member);
+
 	public:
 		Channel();
+		Channel(std::string const name, std::string const key, std::string const topic);
 		Channel(Channel const & src);
 		~Channel();
 
@@ -46,9 +51,9 @@ class Channel
 		void	set_userLimit(int const newLimit);
 
 		std::vector<Client>	get_members(void) const;
-		void	set_members(std::vector<Client> const & newList);
+		// void	set_members(std::vector<Client> const & newList); // likely unncessary
 		std::vector<Client>	get_operators(void) const;
-		void	set_operators(std::vector<Client> const & newList);
+		// void	set_operators(std::vector<Client> const & newList); // likely unncessary
 
 
 		//The following is a list of functionalities that are expected

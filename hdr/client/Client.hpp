@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/07/25 16:33:07 by mteerlin      #+#    #+#                 */
-/*   Updated: 2023/07/25 17:45:38 by mteerlin      ########   odam.nl         */
+/*   Updated: 2023/07/26 15:56:24 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,14 @@
 # define CLIENT_HPP
 
 # include "ircserv.hpp"
+# include <vector>
 
 class Client 
 {
 	private:
 		std::string _nickName;
 		std::string	_userName;
+		std::string _realName;
 		std::vector<Channel> _subscribedChannels;
 
 	public:
@@ -28,6 +30,7 @@ class Client
 		~Client();
 
 		Client & operator=(Client const & rhs);
+		bool operator==(Client const & rhs) const;
 
 		std::string	get_nickName(void) const;
 		void	set_nickName(std::string const newNick);

@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/07/25 16:40:14 by mteerlin      #+#    #+#                 */
-/*   Updated: 2023/07/25 17:29:09 by mteerlin      ########   odam.nl         */
+/*   Updated: 2023/07/26 14:05:35 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,13 @@ Client::~Client() {}
 Client & Client::operator=(Client const & rhs)
 {
 	(void)rhs;
+}
+
+bool Client::operator==(Client const & rhs) const
+{
+	if (this->_userName == rhs.get_userName())
+		return (true);
+	return (false);
 }
 
 /*-------- GETTERS & SETTERS --------*/

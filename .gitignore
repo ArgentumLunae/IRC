@@ -36,3 +36,6 @@
 
 # Sourcefile listing
 get_sources.sh
+
+# VScode settings
+.vscode/
