@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/07/25 16:33:07 by mteerlin      #+#    #+#                 */
-/*   Updated: 2023/07/26 15:56:24 by mteerlin      ########   odam.nl         */
+/*   Updated: 2023/07/28 13:28:27 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 class Client 
 {
 	private:
+		int			_clientfd;
 		std::string _nickName;
 		std::string	_userName;
 		std::string _realName;

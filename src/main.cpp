@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2023/07/25 17:05:43 by mteerlin      #+#    #+#                 */
-/*   Updated: 2023/07/26 18:41:04 by mteerlin      ########   odam.nl         */
+/*   Updated: 2023/07/28 17:42:24 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,20 @@
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <poll.h>
 
 #include <iostream>
+
+/*taking inventory of shit used
+	- addrinfo for hints, result, and a temporary one to run through different options (may not all be required)
+	- the socketfd of the server
+	- backlog, I assume how many messages can wait in the cue at a time (but memory if fucked)
+
+	- a socketfd for the client
+
+	- The host name. hardcoded '127.0.0.1' in this example.
+	- the port and password, as given in argv.
+*/
 
 int main(int argc, char **argv)
 {
@@ -28,7 +40,6 @@ int main(int argc, char **argv)
 	int	addrinfo;
 	int socketfd;
 	int backlog = 11;
-	int listenreturn;
 
 	(void)argv;
 	if (argc != 3)
@@ -59,33 +70,54 @@ int main(int argc, char **argv)
 		std::cout << "socket bound to name: " << socketfd << std::endl;
 		break ;
 	}
-	listenreturn = listen(socketfd, backlog);
-	std::cout << "listen returns: " << listenreturn << std::endl;
-	if (listenreturn == -1)
+	if (listen(socketfd, backlog) == -1)
 	{
 		std::cerr << "listen() error: " << strerror(errno) << std::endl;
 		return (EXIT_FAILURE);
 	}
+	int idx = 1;
+	pollfd	clientSocket;
 	while (true) 
 	{
-		int clientSocket = accept(socketfd, tmp->ai_addr, &tmp->ai_addrlen);
-		if (clientSocket < 0)
-		{
-			std::cerr << "accept() error" << strerror(errno);
-			close(clientSocket);
-			continue ;
-		}
-		fcntl(clientSocket, F_SETFL, O_NONBLOCK);
-		int bytesSent = send(clientSocket, "WELCOME TO THE SERVER", 22, MSG_DONTWAIT);
+		// std::cout << "starting loop number: " << idx << std::endl;
+		fcntl(socketfd, F_SETFL, O_NONBLOCK);
+		if (!clientSocket.fd)
+			clientSocket.fd = accept(socketfd, tmp->ai_addr, &tmp->ai_addrlen);
+		fcntl(clientSocket.fd, F_SETFL, O_NONBLOCK);
+		// std::cout << "accept is blocking" << std::endl;
+		// if (clientSocket.fd < 0)
+		// {
+		// 	std::cerr << "accept() error " << strerror(errno) << " " << clientSocket.fd << std::endl;
+		// 	close(clientSocket.fd);
+		// 	continue ;
+		// }
+		int bytesSent = send(clientSocket.fd, ":127.0.0.1 001 test :WELCOME TO THE SERVER\n", 43, MSG_DONTWAIT);
+		send(clientSocket.fd, ":127.0.0.1 372 test :This is your message of the day\n", 53, MSG_DONTWAIT);
+		send(clientSocket.fd, ":127.0.0.1 372 test :TWF IS GOING ON\n", 37, MSG_DONTWAIT);
 		std::cout << "send() return: " << bytesSent << std::endl;
 		if (bytesSent < 0)
 		{
-			std::cerr << "send() error" << strerror(errno);
-			close(clientSocket);
+			std::cerr << "send() error" << strerror(errno) << std::endl;
+			close(clientSocket.fd);
 			continue ;
 		}
+		char buffer[1024];
+		int	bytesread = 0;
+		if (poll(&clientSocket, 1, 1000) && (bytesread = recv(clientSocket.fd, buffer, sizeof(buffer), 0)) > 0)
+		{
+			std::string receivedMessage(buffer, bytesread);
+			std::cout << "Message from client: " << receivedMessage << std::endl;
+		}
+		if (bytesread == 0)
+		{
+			std::cout << "Client Disconnected." << std::endl;
+		} else {
+			std::cerr << "Error in receiving data from client." << std::endl;
+		}
+
 		std::cout << "Client reached end of loop." << std::endl;
-		close(clientSocket);
+		// close(clientSocket.fd);
+		idx++;
 	}
 	return (EXIT_SUCCESS);
 }
