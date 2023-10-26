@@ -22,7 +22,7 @@ C_FLAGS = -Wall -Wextra -Werror
 STD_FLAGS := -std=c++98
 SAN_FLAGS := -g -fsanitize=thread
 GCC := c++
-CC = ${GCC} $(C_FLAGS) $(STD_FLAGS) #$(SAN_FLAGS)
+CC = ${GCC} $(C_FLAGS) #$(STD_FLAGS) #$(SAN_FLAGS)
 
 all: obj_dir $(NAME)
 

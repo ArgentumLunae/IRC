@@ -18,7 +18,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
-
+#include <stdlib.h>
+#include <cstring>
+#include <string>
 #include <iostream>
 
 /*taking inventory of shit used
@@ -82,7 +84,7 @@ int main(int argc, char **argv)
 		return (EXIT_SUCCESS);
 	}
 
-	std::string			port = argv[1];
+	const std::string			port = argv[1];
 
 	listenSD = socket(AF_INET6, SOCK_STREAM, 0);
 	if (listenSD  < 0)
@@ -99,7 +101,7 @@ int main(int argc, char **argv)
 		return (EXIT_FAILURE);
 	}
 
-	rc = fcntl(listenSD, O_NONBLOCK, (char *)&on);
+	rc = fcntl(listenSD, F_SETFL, O_NONBLOCK);
 	if (rc < 0)
 	{
 		std::cerr << "fcntl() error: " << strerror(errno) << std::endl;
@@ -130,7 +132,7 @@ int main(int argc, char **argv)
 	std::memset(fds, 0, sizeof(fds));
 
 	fds[0].fd = listenSD;
-	fds[0].events = POLLIN;
+	fds[0].events = POLLIN | POLLOUT | POLLHUP;
 
 	timeout = (3 * 60 * 1000);
 
@@ -150,95 +152,107 @@ int main(int argc, char **argv)
 		}
 
 		currentSize = nfds;
-		for (i = 0; i < nfds; i++)
+
+		for (int i = 0; i < nfds; i++)
 		{
-			if (fds[i].revents == 0)
+			if (fds[i].revents = 0)
 				continue ;
-			if (fds[i].revents != POLLIN)
+			if (fds[i].revents & POLLIN)
 			{
-				std::cerr << "Error! revents = " << fds[i].revents << std::endl;
-				endServer = true;
-				break ;
-			}
-			if (fds[i].fd == listenSD)
-			{
-				std::cout << "	Listening socket is readable" << std::endl;
-				do
-				{
-					newSD = accept(listenSD, NULL, NULL);
-					if (newSD < 0)
-					{
-						if (errno != EWOULDBLOCK)
-						{
-							std::cerr << "accept() error: " << strerror(errno) << std::endl;
-							endServer = true;
-						}
-						break ;
-					}
-				
-					std::cout << "	new incoming connection - " << newSD << std::endl;
-					fds[nfds].fd = newSD;
-					fds[nfds].events = POLLIN;
-					nfds++;
-					if (sendMOTD(newSD))
-						closeCon = true;
-				} while (newSD != -1);
-			}
-			else
-			{
-				std::cout << "	Descriptor " << fds[i].fd << " is readable" << std::endl;
-				closeCon = false;
+				if (i == 0)
 
-				do
-				{
-					rc = recv(fds[i].fd, buffer, sizeof(buffer), 0);
-					if (rc < 0)
-					{
-						if (errno != EWOULDBLOCK)
-						{
-							std::cerr << "recv() error " << strerror(errno) << std::endl;
-							closeCon = true;
-						}
-						break ;
-					}
-					if (rc == 0)
-					{
-						std::cout << "Connection closed" << std::endl;
-						closeCon = true;
-						break ;
-					}
-					len = rc;
-					std::cout << "	" << len << " bytes received" << std::endl;
-					if (len < 80)
-						buffer[len] = '\n';
-					rc = send (fds[i].fd, serverPrefix.c_str(), len, 0);
-					rc = send (fds[i].fd, buffer, len, 0);
-					if (rc < 0)
-					{
-						std::cerr << "send() error: " << strerror(errno) << std::endl;
-						closeCon = true;
-						break ;
-					}
-					std::cout << "	" << len << " bytes sent" << std::endl;
-				} while (true);
-				
-				rc = send (fds[i].fd, buffer, len, 0);
-					if (rc < 0)
-					{
-						std::cerr << "send() error: " << strerror(errno) << std::endl;
-						closeCon = true;
-						break ;
-					}
-					std::cout << "	" << len << " bytes sent" << std::endl;
-
-				if (closeCon)
-				{
-					close(fds[i].fd);
-					fds[i].fd = -1;
-					compressArray = true;
-				}
 			}
 		}
+		// for (i = 0; i < nfds; i++)
+		// {
+		// 	if (fds[i].revents == 0)
+		// 		continue ;
+		// 	if (fds[i].revents != POLLIN)
+		// 	{
+		// 		std::cerr << "Error! revents = " << fds[i].revents << std::endl;
+		// 		endServer = true;
+		// 		break ;
+		// 	}
+
+		// 	if (fds[i].fd == listenSD)
+		// 	{
+		// 		std::cout << "	Listening socket is readable" << std::endl;
+		// 		do
+		// 		{
+		// 			newSD = accept(listenSD, NULL, NULL);
+		// 			if (newSD < 0)
+		// 			{
+		// 				if (errno != EWOULDBLOCK)
+		// 				{
+		// 					std::cerr << "accept() error: " << strerror(errno) << std::endl;
+		// 					endServer = true;
+		// 				}
+		// 				break ;
+		// 			}
+				
+		// 			std::cout << "	new incoming connection - " << newSD << std::endl;
+		// 			fds[nfds].fd = newSD;
+		// 			fds[nfds].events = POLLIN;
+		// 			nfds++;
+		// 			if (sendMOTD(newSD))
+		// 				closeCon = true;
+		// 		} while (newSD != -1);
+		// 	}
+		// 	else
+		// 	{
+		// 		std::cout << "	Descriptor " << fds[i].fd << " is readable" << std::endl;
+		// 		closeCon = false;
+
+		// 		do
+		// 		{
+		// 			rc = recv(fds[i].fd, buffer, sizeof(buffer), 0);
+		// 			if (rc < 0)
+		// 			{
+		// 				if (errno != EWOULDBLOCK)
+		// 				{
+		// 					std::cerr << "recv() error " << strerror(errno) << std::endl;
+		// 					closeCon = true;
+		// 				}
+		// 				break ;
+		// 			}
+		// 			if (rc == 0)
+		// 			{
+		// 				std::cout << "Connection closed" << std::endl;
+		// 				closeCon = true;
+		// 				break ;
+		// 			}
+		// 			len = rc;
+		// 			std::cout << "	" << len << " bytes received" << std::endl;
+		// 			if (len < 80)
+		// 				buffer[len] = '\n';
+		// 			rc = send (fds[i].fd, serverPrefix.c_str(), len, 0);
+		// 			rc = send (fds[i].fd, buffer, len, 0);
+		// 			if (rc < 0)
+		// 			{
+		// 				std::cerr << "send() error: " << strerror(errno) << std::endl;
+		// 				closeCon = true;
+		// 				break ;
+		// 			}
+		// 			std::cout << "	" << len << " bytes sent" << std::endl;
+		// 		} while (true);
+				
+		// 		rc = send (fds[i].fd, buffer, len, 0);
+		// 			if (rc < 0)
+		// 			{
+		// 				std::cerr << "send() error: " << strerror(errno) << std::endl;
+		// 				closeCon = true;
+		// 				break ;
+		// 			}
+		// 			std::cout << "	" << len << " bytes sent" << std::endl;
+
+		// 		if (closeCon)
+		// 		{
+		// 			close(fds[i].fd);
+		// 			fds[i].fd = -1;
+		// 			compressArray = true;
+		// 		}
+		// 	}
+		// }
 
 		if (compressArray)
 		{

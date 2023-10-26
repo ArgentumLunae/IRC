@@ -16,17 +16,18 @@
 #include "ircserv.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
+#include <vector>
 
 class Server
 {
 	private:
-		int			_serverfd;
-		std::string	_serverName;
-		std::string	_password;
-		int			_clientLimit;
+		std::vector<struct pollfd>	_fds;
+		std::string					_serverName;
+		std::string					_password;
+		int							_clientLimit;
 
-		std::map<int, Client>	_clientsByConnection;
-		std::map<std::string, Channel> _channelsByKey;
+		std::map<int, Client>			_clientsByConnection;
+		std::map<std::string, Channel>	_channelsByKey;
 
 	public:
 		Server();
@@ -36,7 +37,7 @@ class Server
 
 		Server & operator=(Server const & rhs);
 
-		int	get_serverfd(void) const;
+		std::vector<struct pollfd>		get_serverfd(void) const;
 		void	set_serverfd(int const newfd);
 		std::string	get_serverName(void) const;
 		void	set_serverName(std::string const newName);
