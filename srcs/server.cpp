@@ -4,11 +4,113 @@
 #include "channel.hpp"
 #include "config.hpp"
 #include "server.hpp"
+#include <errno.h>
+#include <cstring>
+#include <unistd.h>
 
-//CONSTRUCTOR/DECONSTRUCTOR
+/* -------- MEMBER FUNCTIONS -------- */
+
+int		Server::runServer()
+{
+	bool endserver = false;
+	int  timeout = 1000;         // Does this need to be part of configuration?
+
+	while (endserver == false)
+	{
+		int rc;
+
+		std::cout << " waiting on poll()..." << std::endl;
+		rc = poll(_fds.data(), _fds.size(), timeout);
+		if (rc < 0)
+		{
+			std::cerr << "poll() error: " << strerror(errno) << std::endl;
+			break ;
+		}
+		if (rc == 0)
+		{
+			std::cerr << "poll() timeout: " << strerror(errno) << std::endl;
+			break ;	
+		}
+		
+	}
+}
+
+int		Server::initServer()
+{
+	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (_serverSocket < 0)
+	{
+		std::cerr << "socket() error: " << strerror(errno) << std::endl;
+		return FAILURE;
+	}
+	if (fcntl(_serverSocket, F_SETFL, O_NONBLOCK) < 0)
+	{
+		std::cerr << "fctnl() error: " << strerror(errno) << std::endl;
+		close(_serverSocket);
+		return FAILURE;
+	}
+	_serverAddr.sin_family = AF_INET;
+	_serverAddr.sin_addr.s_addr = INADDR_ANY;
+	_serverAddr.sin_port = htons(_port);
+	if (bind(_serverSocket, (struct sockaddr *)&_serverAddr, sizeof(_serverAddr)) != 0)
+	{
+		std::cerr << "bind() error: " << strerror(errno) << std::endl;
+		close(_serverSocket);
+		return FAILURE;
+	}
+	if (listen(_serverSocket, 10) != 0)
+	{
+		std::cerr << "listen() error: " << strerror(errno) << std::endl;
+		close(_serverSocket);
+		return FAILURE;
+	}
+	std::cout << "Server listening on port " << _port << std::endl;
+	
+	pollfd serverPoll;
+	serverPoll.fd = _serverSocket;
+	serverPoll.events = POLLIN | POLLOUT | POLLHUP;
+	_fds.push_back(serverPoll);
+}
+
+int		Server::start_server()
+{
+	if (!this->initServer());
+		return FAILURE;
+	runServer();
+	closeServer();
+	return SUCCESS;
+}
+
+int 	Server::add_client(int fd)
+{
+
+}
+
+int	    Server::remove_client(int fd)
+{
+
+}
+
+bool	Server::nickname_in_use(std::string nickname)
+{
+
+}
+
+int 	Server::add_channel(std::string channelName, Client &client)
+{
+
+}
+
+int	    Server::remove_channel(std::string channelName)
+{
+
+}
+
+
+/* -------- CONSTRUCTORS & DESTRUCTOR -------- */
 Server::Server(std::string setpass, int setport)
 {
-    //Validation for these things? no idea if it's needed or not
+    //TODO: password and port validation
 	_pass = setpass;
 	_port = setport;
 }
@@ -18,7 +120,7 @@ Server::~Server()
 	return ;
 }
 
-// GETTERS
+/* -------- GETTERS -------- */
 std::string	Server::get_name() const
 {
 	return (_name);
@@ -76,12 +178,5 @@ Channel*	Server::get_channel(std::string channelName)
 		return (nullptr);
 	return (&channel->second);
 }
-//SETTERS
+/* -------- SETTERS -------- */
 
-//OTHERS
-int 	add_client(int fd);
-int	    remove_client(int fd);
-bool	nickname_in_use(std::string nickname);
-int 	add_channel(std::string channelName, Client &client);
-int	    remove_channel(std::string channelName);
-int		start_server();

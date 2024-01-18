@@ -4,9 +4,15 @@
 # include <iostream>
 # include <string>
 # include <map>
+# include <vector>
+# include <poll.h>
+# include <netinet/in.h>
 # include "client.hpp"
 # include "channel.hpp"
 # include "config.hpp"
+
+# define SUCCESS 0
+# define FAILURE 1
 
 class Server
 {
@@ -18,9 +24,18 @@ class Server
 		std::map<int, Client> 			_clientList;
 		std::map<std::string, Channel>	_channelList;
 
+		std::vector<pollfd>	_fds;	// Socket file descriptors currently in use
+		int					_nfds;	// Number of socket file descriptors currently in use
+		int					_serverSocket;
+		struct sockaddr_in	_serverAddr;
+
+		int initServer();
+		int runServer();
+		int closeServer();
+
 	public:
 		//Constructors/deconstructors
-		Server(std::string pass, int port);
+		Server(std::string setpass, int setport);
 		~Server();
 		
 		// Getters
