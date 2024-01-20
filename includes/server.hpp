@@ -29,9 +29,15 @@ class Server
 		int					_serverSocket;
 		struct sockaddr_in	_serverAddr;
 
+
 		int initServer();
-		int runServer();
-		int closeServer();
+		void runServer();
+		void checkRevents();
+		void clientConnect();
+		void clientDisconnect();
+		void incomingData();
+		void outgoingData();
+		void closeServer();
 
 	public:
 		//Constructors/deconstructors

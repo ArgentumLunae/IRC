@@ -10,31 +10,6 @@
 
 /* -------- MEMBER FUNCTIONS -------- */
 
-int		Server::runServer()
-{
-	bool endserver = false;
-	int  timeout = 1000;         // Does this need to be part of configuration?
-
-	while (endserver == false)
-	{
-		int rc;
-
-		std::cout << " waiting on poll()..." << std::endl;
-		rc = poll(_fds.data(), _fds.size(), timeout);
-		if (rc < 0)
-		{
-			std::cerr << "poll() error: " << strerror(errno) << std::endl;
-			break ;
-		}
-		if (rc == 0)
-		{
-			std::cerr << "poll() timeout: " << strerror(errno) << std::endl;
-			break ;	
-		}
-		
-	}
-}
-
 int		Server::initServer()
 {
 	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -72,6 +47,80 @@ int		Server::initServer()
 	_fds.push_back(serverPoll);
 }
 
+void	Server::runServer()
+{
+	bool endserver = false;
+	int  timeout = 1000;         // Does this need to be part of configuration?
+
+	while (endserver == false)
+	{
+		int rc;
+
+		std::cout << " waiting on poll()..." << std::endl;
+		rc = poll(_fds.data(), _fds.size(), timeout);
+		if (rc < 0)
+		{
+			std::cerr << "poll() error: " << strerror(errno) << std::endl;
+			break ;
+		}
+		if (rc == 0)
+		{
+			std::cerr << "poll() timeout: " << strerror(errno) << std::endl;
+			break ;
+		}
+		checkRevents();
+	}
+}
+
+void	Server::checkRevents()
+{
+	for (size_t i = 0; i < _fds.size(); i++)
+	{
+		if (_fds[i].revents & POLLIN)
+		{
+			if (i == 0)
+				clientConnect();
+			else
+				incomingData();
+		}
+		if (_fds[i].revents & POLLOUT && i > 0)
+				outgoingData();
+		if (_fds[i].revents & POLLHUP && i > 0)
+				clientDisconnect();
+	}
+}
+
+void	Server::clientConnect(size_t idx)
+{
+	struct sockaddr_in clientAddr;
+	int clientSocket = accept(_fds[idx].fd, clientAddr, sizeof(clientAddr));
+	if (clientSocket < 0 && errno != EWOULDBLOCK)
+	{
+		std::cerr << "accept() error: " << strerror(errno) << std::endl;
+		return FAILURE;
+	}
+	std::cout << "New incoming connection - #" << clientSocket << std::endl;
+	clientSocket.events = POLLIN | POLLOUT | POLLHUP;
+	_fds.push_back(clientSocket);
+}
+
+void	Server::clientDisconnect(size_t idx)
+{
+	std::cout << "Client #" << _fds[idx].fd << " has disconnected." << std::endl;
+	remove_client(); //TODO write out this function
+	close(_fds[idx]);
+	_fds.erase(_fds.begin() + idx)
+}
+
+void	Server::incomingData(size_t idx)
+{
+}
+
+void	Server::outgoingData(size_t idx)
+{
+
+}
+
 int		Server::start_server()
 {
 	if (!this->initServer());
@@ -83,12 +132,19 @@ int		Server::start_server()
 
 int 	Server::add_client(int fd)
 {
-
+	if (get_client(fd) != nullptr)
+		return (-1)	// look into using specific defines for this.
+	Client client(fd, this);
+	_clientList.insert(<int, Client>{fd, client});
+	return SUCCESS;
 }
 
 int	    Server::remove_client(int fd)
 {
-
+	// THIS NEEDS TO:
+	//disconnect client from all connected channels
+	//associated client lists
+	//double check if required to be removed from operator lists
 }
 
 bool	Server::nickname_in_use(std::string nickname)
