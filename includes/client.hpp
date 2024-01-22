@@ -5,9 +5,9 @@
 # include <string>
 # include <vector>
 # include "channel.hpp"
-# include "client.hpp"
 
 class Server;
+class Channel;
 
 class Client
 {
@@ -18,7 +18,7 @@ class Client
 		std::string	_fullname;
 		bool		_correctPassword;
 		Server		*_server;
-		std::vector<Channel*> _channelList;
+		std::vector<Channel *> _channelList;
 
 	public:
 		//Constructors/deconstructors

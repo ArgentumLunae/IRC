@@ -33,10 +33,10 @@ class Server
 		int initServer();
 		void runServer();
 		void checkRevents();
-		void clientConnect();
-		void clientDisconnect();
-		void incomingData();
-		void outgoingData();
+		int clientConnect(size_t idx);
+		void clientDisconnect(size_t idx);
+		void incomingData(size_t idx);
+		void outgoingData(size_t idx);
 		void closeServer();
 
 	public:

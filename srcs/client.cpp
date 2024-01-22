@@ -4,7 +4,7 @@
 
 //CONSTRUCTORS/DECONSTRUCTORS
 
-Client::Client(int fd, Server* sever) : _server(_server)
+Client::Client(int fd, Server* server) : _server(server)
 {
     _fd = fd;
 	_nickname = "";

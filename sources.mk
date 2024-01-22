@@ -1,4 +1,6 @@
-SRC_FILES := src/channel/Channel.cpp \
-src/client/Client.cpp \
-src/main.cpp \
-src/server/Server.cpp \
+SRC_FILES := srcs/channel.cpp \
+srcs/client.cpp \
+srcs/config.cpp \
+srcs/main.cpp \
+srcs/server.cpp \
+srcs/untils.cpp

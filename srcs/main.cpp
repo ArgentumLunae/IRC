@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/10 11:48:33 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/01/18 15:44:14 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/01/22 15:05:35 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,10 +36,13 @@ int main(int argc, char **argv)
 		std::cout << "Usecase: ./ircserc <server_port> <server_password>" << std::endl;
 		return EXIT_SUCCESS;
 	}
+
 	std::string portStr(argv[1]);
 	std::string password(argv[2]);
 	int			port = std::stoi(portStr);
-	Server server(password,  port);
+	Server server(password,  port);	
 
-	
+	server.start_server();
+	std::cout << "Program finished" << std::endl;
+	return EXIT_SUCCESS;
 }

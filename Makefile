@@ -6,18 +6,18 @@
 #    By: mteerlin <mteerlin@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2023/01/20 13:49:24 by mteerlin      #+#    #+#                  #
-#    Updated: 2023/08/04 16:48:59 by mteerlin      ########   odam.nl          #
+#    Updated: 2024/01/22 14:09:45 by mteerlin      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
-# include sources.mk
+include sources.mk
 
 NAME = ircserv
 OBJ_DIR = obj
-VPATH := $(subst $(" "),:,$(shell find src -type d))
-SRC_FILES := main.cpp
+VPATH := $(subst $(" "),:,$(shell find srcs -type d))
+# SRC_FILES := main.cpp
 OBJ_FILES = $(addprefix $(OBJ_DIR)/, $(notdir $(patsubst %.cpp, %.o, $(SRC_FILES))))
-HDR_FILES := $(addprefix -I,$(shell find hdr -type d -print))
+HDR_FILES := $(addprefix -I,$(shell find includes -type d -print))
 C_FLAGS = -Wall -Wextra -Werror
 STD_FLAGS := -std=c++98
 SAN_FLAGS := -g -fsanitize=thread

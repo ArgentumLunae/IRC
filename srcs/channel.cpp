@@ -4,7 +4,7 @@
 
 //CONSTRUCTORS AND DECONSTRUCTOS
 
-Channel::Channel(std::string name, Client* creator, Server* server) : _server(_server), _creator(creator)
+Channel::Channel(std::string name, Client* creator, Server* server) : _server(server), _owner(creator)
 {
 	_name = name;
 	_topic = "";
@@ -15,8 +15,7 @@ Channel::Channel(std::string name, Client* creator, Server* server) : _server(_s
 	_operators.push_back(creator);
 }
 
-Channel::Channel(const Channel &copy) : _server(copy._server), _creator(copy._creator)
-{
+Channel::Channel(const Channel &copy) {
 	*this = copy;
 }
 
@@ -34,7 +33,7 @@ Channel &Channel::operator=(const Channel &copy)
 	_clients = copy._clients;
 	_operators = copy._operators;
 	_server = copy._server;
-	_creator = copy._creator;
+	_owner = copy._owner;
 	_invitelist = copy._invitelist;
 	return(*this);
 }
@@ -81,9 +80,9 @@ std::vector<Client*>	Channel::get_operators() const
 	return (_operators);
 }
 
-Client*	Channel::get_creator() const
+Client*	Channel::get_owner() const
 {
-	return (_creator);
+	return (_owner);
 }
 
 ///SETTERS
@@ -127,4 +126,16 @@ int	Channel::set_topic(std::string topic, Client* client)
 		return (FAILURE);
 	_topic = topic;
 	return (SUCCESS);
+}
+
+// MEMBER FUNCTIONS
+bool Channel::check_operator_priv(Client *client)
+{
+	std::vector<Client *>::iterator itend = _operators.end();
+	for (std::vector<Client *>::iterator it = _operators.begin(); it != itend; it++)
+	{
+		if (it[0] == client)
+			return true;
+	}
+	return false;
 }

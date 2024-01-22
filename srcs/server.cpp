@@ -45,6 +45,7 @@ int		Server::initServer()
 	serverPoll.fd = _serverSocket;
 	serverPoll.events = POLLIN | POLLOUT | POLLHUP;
 	_fds.push_back(serverPoll);
+	return SUCCESS;;
 }
 
 void	Server::runServer()
@@ -72,6 +73,15 @@ void	Server::runServer()
 	}
 }
 
+void	Server::closeServer()
+{
+	std::vector<pollfd>::iterator itend = _fds.end();
+
+	for (std::vector<pollfd>::iterator it = _fds.begin(); it != itend; ++it)
+		close(it[0].fd);
+	_fds.erase(_fds.begin(), itend);
+}
+
 void	Server::checkRevents()
 {
 	for (size_t i = 0; i < _fds.size(); i++)
@@ -79,51 +89,63 @@ void	Server::checkRevents()
 		if (_fds[i].revents & POLLIN)
 		{
 			if (i == 0)
-				clientConnect();
+			{
+				clientConnect(i);
+				continue ;
+			}
 			else
-				incomingData();
+				incomingData(i);
 		}
 		if (_fds[i].revents & POLLOUT && i > 0)
-				outgoingData();
+				outgoingData(i);
 		if (_fds[i].revents & POLLHUP && i > 0)
-				clientDisconnect();
+				clientDisconnect(i);
 	}
 }
 
-void	Server::clientConnect(size_t idx)
+int	Server::clientConnect(size_t idx)
 {
-	struct sockaddr_in clientAddr;
-	int clientSocket = accept(_fds[idx].fd, clientAddr, sizeof(clientAddr));
-	if (clientSocket < 0 && errno != EWOULDBLOCK)
+	struct sockaddr clientAddr;
+	socklen_t clientAddrLen = sizeof(clientAddr);
+	pollfd clientSocket;
+	
+	clientSocket.fd = accept(_fds[idx].fd, &clientAddr, &clientAddrLen);
+
+	if (clientSocket.fd < 0 && errno != EWOULDBLOCK)
 	{
 		std::cerr << "accept() error: " << strerror(errno) << std::endl;
 		return FAILURE;
 	}
-	std::cout << "New incoming connection - #" << clientSocket << std::endl;
+	std::cout << "New incoming connection - #" << clientSocket.fd << std::endl;
 	clientSocket.events = POLLIN | POLLOUT | POLLHUP;
 	_fds.push_back(clientSocket);
+	add_client(clientSocket.fd);
+	return SUCCESS;
 }
 
 void	Server::clientDisconnect(size_t idx)
 {
 	std::cout << "Client #" << _fds[idx].fd << " has disconnected." << std::endl;
-	remove_client(); //TODO write out this function
-	close(_fds[idx]);
-	_fds.erase(_fds.begin() + idx)
+	remove_client(_fds[idx].fd); //TODO write out this function
+	close(_fds[idx].fd);
+	_fds.erase(_fds.begin() + idx);
 }
 
 void	Server::incomingData(size_t idx)
 {
+	if (idx)
+		return ;
 }
 
 void	Server::outgoingData(size_t idx)
 {
-
+	if (idx)
+		return ;
 }
 
 int		Server::start_server()
 {
-	if (!this->initServer());
+	if (this->initServer())
 		return FAILURE;
 	runServer();
 	closeServer();
@@ -133,9 +155,9 @@ int		Server::start_server()
 int 	Server::add_client(int fd)
 {
 	if (get_client(fd) != nullptr)
-		return (-1)	// look into using specific defines for this.
+		return (-1);	// look into using specific defines for this.
 	Client client(fd, this);
-	_clientList.insert(<int, Client>{fd, client});
+	_clientList.insert(std::make_pair(fd, client));
 	return SUCCESS;
 }
 
@@ -145,21 +167,34 @@ int	    Server::remove_client(int fd)
 	//disconnect client from all connected channels
 	//associated client lists
 	//double check if required to be removed from operator lists
+	if (get_client(fd) == nullptr)
+		return (-1);
+	_clientList.erase(_clientList.find(fd));
+	return SUCCESS;	
 }
 
 bool	Server::nickname_in_use(std::string nickname)
 {
-
+	if (nickname.empty())
+		return false;
+	return false;
 }
 
 int 	Server::add_channel(std::string channelName, Client &client)
 {
-
+	if (channelName.empty())
+	{
+		client = client;
+		return -1;
+	}
+	return SUCCESS;
 }
 
 int	    Server::remove_channel(std::string channelName)
 {
-
+	if (channelName.empty())
+		return -1;
+	return SUCCESS;
 }
 
 

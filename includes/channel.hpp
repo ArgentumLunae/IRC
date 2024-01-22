@@ -6,6 +6,9 @@
 # include <vector>
 # include "client.hpp"
 
+class Server;
+class Client;
+
 class Channel
 {
 	private:
@@ -14,10 +17,13 @@ class Channel
 		std::string	_password;
 		bool		_invite;
 		Server*		_server;
+		Client*		_owner;
 		std::vector<Client*>	_clients;
 		std::vector<Client*>	_operators;
 		std::vector<Client*>	_invitelist;
 		size_t		_userlimit;
+
+		bool	check_operator_priv(Client *client);
 
 	public:
         //Constructors/Deconstructors
