@@ -1,12 +1,13 @@
 #include <iostream>
 #include <fcntl.h>
+#include <errno.h>
+#include <cstring>
+#include <unistd.h>
 #include "client.hpp"
 #include "channel.hpp"
 #include "config.hpp"
 #include "server.hpp"
-#include <errno.h>
-#include <cstring>
-#include <unistd.h>
+#include "utils.h"
 
 /* -------- MEMBER FUNCTIONS -------- */
 
@@ -51,13 +52,13 @@ int		Server::initServer()
 void	Server::runServer()
 {
 	bool endserver = false;
-	int  timeout = 1000;         // Does this need to be part of configuration?
+	int  timeout = 10 * 60 * 1000;         // Does this need to be part of configuration?
 
 	while (endserver == false)
 	{
 		int rc;
 
-		std::cout << " waiting on poll()..." << std::endl;
+		// std::cout << " waiting on poll()..." << std::endl;
 		rc = poll(_fds.data(), _fds.size(), timeout);
 		if (rc < 0)
 		{
@@ -88,18 +89,29 @@ void	Server::checkRevents()
 	{
 		if (_fds[i].revents & POLLIN)
 		{
+			// std::cout << "POLLIN " << i << std::endl;
 			if (i == 0)
 			{
+				// std::cout << " incoming connection." << std::endl;
 				clientConnect(i);
 				continue ;
 			}
 			else
+			{
+				// std::cout << " incoming data." << std::endl;
 				incomingData(i);
+			}
 		}
-		if (_fds[i].revents & POLLOUT && i > 0)
-				outgoingData(i);
-		if (_fds[i].revents & POLLHUP && i > 0)
-				clientDisconnect(i);
+		if ((_fds[i].revents & POLLOUT) && i > 0)
+		{
+			// std::cout << "POLLOUT " << i << std::endl;
+			outgoingData(i);
+		}
+		if ((_fds[i].revents & POLLHUP) && i > 0)
+		{
+			// std::cout << "POLLHUP " << i << std::endl;
+			clientDisconnect(i);
+		}
 	}
 }
 
@@ -133,8 +145,31 @@ void	Server::clientDisconnect(size_t idx)
 
 void	Server::incomingData(size_t idx)
 {
-	if (idx)
-		return ;
+	char buffer[512];
+	int bytesRecv = recv(_fds[idx].fd, buffer, sizeof(buffer) - 1, 0);
+	if (bytesRecv < 0)
+		std::cerr << "recv() error: " << strerror(errno) << std::endl;
+	else
+	{
+		// bool messageComplete = false;
+		std::vector<std::string> messages;
+		
+		buffer[bytesRecv] = '\0';
+		// if (bytesRecv >= 2 && buffer[bytesRecv - 2] == '\r' && buffer[bytesRecv - 1] == '\n')
+		// 	messageComplete = true;
+		messages = split(buffer, "\r\n");
+		for (std::vector<std::string>::iterator iter; iter != messages.end(); iter++)
+		{
+			std::string currentMessage = *iter;
+			if (currentMessage.length() > 0)
+			{
+				std::cout << "Received message from client #" << _fds[idx].fd << ": " << currentMessage << std::endl;
+				
+			}
+		}
+	}
+	std::cout << " " << bytesRecv << " bytes received." << std::endl;
+	std::cout << buffer << std::endl;
 }
 
 void	Server::outgoingData(size_t idx)
@@ -158,6 +193,7 @@ int 	Server::add_client(int fd)
 		return (-1);	// look into using specific defines for this.
 	Client client(fd, this);
 	_clientList.insert(std::make_pair(fd, client));
+	std::cout << "Client added to server client list" << std::endl;
 	return SUCCESS;
 }
 

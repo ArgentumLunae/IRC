@@ -1,6 +1,5 @@
 #include "client.hpp"
 #include "server.hpp"
-#include "channel.hpp"
 
 //CONSTRUCTORS/DECONSTRUCTORS
 
@@ -20,7 +19,7 @@ Client::Client(const Client &copy) : _server(copy._server)
 
 Client::~Client()
 {
-	std::cout << "Client's been shot, sir." << std::endl;
+	std::cout << "Client #" << _fd << " has been shot, sir." << std::endl;
 	return ;
 }
 
@@ -104,8 +103,52 @@ int	Client::set_correctPassword(std::string password)
 
 //OTHERS (STILL TO DO)
 
-int			join_channel(std::string channelName, std::string password);
-int			leave_channel(std::string channelName);
-std::vector<Channel*> get_channelList(void);
-Channel*	get_channel(std::string channelName);
-bool		is_in_channel(std::string channelName);
+int			Client::join_channel(std::string channelName, std::string password)
+{
+	channelName = password;
+	return 1;
+}
+
+int			Client::leave_channel(std::string channelName)
+{
+	channelName = "me";
+	return 1;
+}
+
+Channel*	Client::get_channel(std::string channelName)
+{
+	std::vector<Channel*>::iterator itend = _channelList.end();
+	for (std::vector<Channel*>::iterator iter = _channelList.begin(); iter != itend; iter++)
+	{
+		if ((*iter)->get_name() == channelName)
+			return *iter;
+	}
+	return nullptr;
+}
+
+bool		Client::is_in_channel(std::string channelName)
+{
+	for (std::vector<Channel*>::iterator iter = _channelList.begin(); iter != _channelList.end(); iter++)
+	{
+		if ((*iter)->get_name() == channelName)
+			return true;
+	}
+	return false;
+}
+
+void	Client::push_message(std::string message)
+{
+	_incomingMessages.push_back(message);
+}
+
+std::string	Client::pop_message(void)
+{
+	std::string firstMessage = _incomingMessages.front();
+	_incomingMessages.pop_front();
+	return firstMessage;
+}
+
+bool	Client::has_incoming_messages(void) const
+{
+	return (!_incomingMessages.empty());
+}

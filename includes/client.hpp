@@ -4,6 +4,7 @@
 # include <iostream>
 # include <string>
 # include <vector>
+# include <deque>
 # include "channel.hpp"
 
 class Server;
@@ -20,6 +21,9 @@ class Client
 		Server		*_server;
 		std::vector<Channel *> _channelList;
 
+		std::deque<std::string> _incomingMessages;
+		std::string				_messageBuffer;
+
 	public:
 		//Constructors/deconstructors
 		Client(int fd, Server* server);
@@ -34,6 +38,7 @@ class Client
 		std::string	get_fullname() const;
 		bool		get_correctPassword() const;
 		Server*		get_server() const;
+		std::string	get_messageBuffer();
 
 		//Setters
 		int			set_nickname(std::string nickname);
@@ -45,7 +50,11 @@ class Client
 		int			leave_channel(std::string channelName);
 		std::vector<Channel*> get_channelList(void);
 		Channel*	get_channel(std::string channelName);
-		bool		is_in_channel(std::string channelName) const;
+		bool		is_in_channel(std::string channelName);
+
+		void push_message(std::string message);
+		std::string pop_message(void);
+		bool has_incoming_messages(void) const;
 };
 
 #endif
