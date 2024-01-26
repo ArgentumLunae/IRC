@@ -35,8 +35,8 @@ class Server
 		void checkRevents();
 		int clientConnect(size_t idx);
 		void clientDisconnect(size_t idx);
-		void incomingData(size_t idx);
-		void outgoingData(size_t idx);
+		int incomingData(size_t idx);
+		int outgoingData(int clientfd);
 		void closeServer();
 
 	public:
@@ -64,6 +64,7 @@ class Server
 		int 	add_channel(std::string channelName, Client &client);
 		int	    remove_channel(std::string channelName);
 		int		start_server();
+		int		msg_to_client(int clientfd, std::string msg);
 };
 
 #endif

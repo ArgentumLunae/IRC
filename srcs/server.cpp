@@ -44,7 +44,7 @@ int		Server::initServer()
 	
 	pollfd serverPoll;
 	serverPoll.fd = _serverSocket;
-	serverPoll.events = POLLIN | POLLOUT | POLLHUP;
+	serverPoll.events = POLLIN | POLLOUT;
 	_fds.push_back(serverPoll);
 	return SUCCESS;;
 }
@@ -87,29 +87,26 @@ void	Server::checkRevents()
 {
 	for (size_t i = 0; i < _fds.size(); i++)
 	{
+		// std::cout << _fds.size() << "\t" << i << std::endl;
 		if (_fds[i].revents & POLLIN)
 		{
 			// std::cout << "POLLIN " << i << std::endl;
 			if (i == 0)
 			{
-				// std::cout << " incoming connection." << std::endl;
 				clientConnect(i);
 				continue ;
 			}
-			else
-			{
-				// std::cout << " incoming data." << std::endl;
-				incomingData(i);
-			}
+			else if (incomingData(i) == FAILURE)
+				continue ;
 		}
 		if ((_fds[i].revents & POLLOUT) && i > 0)
 		{
 			// std::cout << "POLLOUT " << i << std::endl;
-			outgoingData(i);
+			outgoingData(_fds[i].fd);
 		}
 		if ((_fds[i].revents & POLLHUP) && i > 0)
 		{
-			// std::cout << "POLLHUP " << i << std::endl;
+			std::cout << "POLLHUP " << i << std::endl;
 			clientDisconnect(i);
 		}
 	}
@@ -129,7 +126,7 @@ int	Server::clientConnect(size_t idx)
 		return FAILURE;
 	}
 	std::cout << "New incoming connection - #" << clientSocket.fd << std::endl;
-	clientSocket.events = POLLIN | POLLOUT | POLLHUP;
+	clientSocket.events = POLLIN | POLLOUT;
 	_fds.push_back(clientSocket);
 	add_client(clientSocket.fd);
 	return SUCCESS;
@@ -143,13 +140,14 @@ void	Server::clientDisconnect(size_t idx)
 	_fds.erase(_fds.begin() + idx);
 }
 
-void	Server::incomingData(size_t idx)
+int	Server::incomingData(size_t idx)
 {
 	char buffer[512];
 	int bytesRecv = recv(_fds[idx].fd, buffer, sizeof(buffer) - 1, 0);
+		
 	if (bytesRecv < 0)
 		std::cerr << "recv() error: " << strerror(errno) << std::endl;
-	else
+	else if (bytesRecv > 0)
 	{
 		// bool messageComplete = false;
 		std::vector<std::string> messages;
@@ -157,25 +155,67 @@ void	Server::incomingData(size_t idx)
 		buffer[bytesRecv] = '\0';
 		// if (bytesRecv >= 2 && buffer[bytesRecv - 2] == '\r' && buffer[bytesRecv - 1] == '\n')
 		// 	messageComplete = true;
+		// std::cout << "incoming data." << std::endl;
 		messages = split(buffer, "\r\n");
-		for (std::vector<std::string>::iterator iter; iter != messages.end(); iter++)
+		for (std::vector<std::string>::iterator iter = messages.begin(); iter != messages.end(); iter++)
 		{
 			std::string currentMessage = *iter;
 			if (currentMessage.length() > 0)
 			{
 				std::cout << "Received message from client #" << _fds[idx].fd << ": " << currentMessage << std::endl;
-				
+				msg_to_client(_fds[idx].fd, currentMessage);
 			}
 		}
 	}
+	else
+	{
+		Client *client = get_client(_fds[idx].fd);
+
+		std::cout << "Other end of socket is closed." << std::endl;
+		if (!client->has_incoming_messages())
+		{
+			clientDisconnect(idx);
+			return FAILURE;
+		}
+	}
 	std::cout << " " << bytesRecv << " bytes received." << std::endl;
-	std::cout << buffer << std::endl;
+	return SUCCESS;
 }
 
-void	Server::outgoingData(size_t idx)
+int	Server::msg_to_client(int clientfd, std::string msg)
 {
-	if (idx)
-		return ;
+	Client* client = get_client(clientfd);
+	if (client == nullptr)
+	{
+		std::cerr << "msg_to_client(): Client #" << clientfd << " not found." << std::endl;
+		return FAILURE;
+	}
+	client->push_message(msg);
+	return SUCCESS;
+}
+
+int	Server::outgoingData(int clientfd)
+{
+	Client* client = get_client(clientfd);
+
+	if (client == nullptr)
+	{
+		std::cerr << "outgoingData(): Client #" << clientfd << " not found." << std::endl;
+		return FAILURE;
+	}
+	// std::cout << "check if client has incoming messages." << std::endl;
+	while (client->has_incoming_messages())
+	{
+		std::string message = client->pop_message();
+		if (send(clientfd, message.c_str(), message.length(), 0) < 0)
+		{
+			std::cerr << "send() error: " << strerror(errno) << std::endl;
+			return FAILURE;
+		}
+		else
+			std::cout << "Client #" << client->get_fd() << " receives: " << message << std::endl;
+	}
+	return SUCCESS;
 }
 
 int		Server::start_server()
