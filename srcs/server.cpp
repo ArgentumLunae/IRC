@@ -207,6 +207,8 @@ int	Server::outgoingData(int clientfd)
 	while (client->has_incoming_messages())
 	{
 		std::string message = client->pop_message();
+		if (message == "CAP LS")
+			message = ":127.0.0.1 001 test :CAP * LS :\r\n";
 		if (send(clientfd, message.c_str(), message.length(), 0) < 0)
 		{
 			std::cerr << "send() error: " << strerror(errno) << std::endl;
