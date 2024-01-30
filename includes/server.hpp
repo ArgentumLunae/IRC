@@ -39,6 +39,9 @@ class Server
 		int outgoingData(int clientfd);
 		void closeServer();
 
+		void increment_nfds();
+		void decrement_nfds();
+
 	public:
 		//Constructors/deconstructors
 		Server(std::string setpass, int setport);

@@ -207,8 +207,10 @@ int	Server::outgoingData(int clientfd)
 	while (client->has_incoming_messages())
 	{
 		std::string message = client->pop_message();
-		if (message == "CAP LS")
-			message = ":127.0.0.1 001 test :CAP * LS :\r\n";
+		if (message == "CAP LS")		//THIS MOVES TO HANDLING COMMANDS
+			message = ":127.0.0.1 001 AgLunae :CAP * LS :\r\n";
+		else
+			message = ":127.0.0.1 001 AgLunae :" + message;
 		if (send(clientfd, message.c_str(), message.length(), 0) < 0)
 		{
 			std::cerr << "send() error: " << strerror(errno) << std::endl;
@@ -262,8 +264,8 @@ int 	Server::add_channel(std::string channelName, Client &client)
 {
 	if (channelName.empty())
 	{
-		client = client;
-		return -1;
+		if (client.get_fd())
+			return -1;
 	}
 	return SUCCESS;
 }
@@ -275,6 +277,13 @@ int	    Server::remove_channel(std::string channelName)
 	return SUCCESS;
 }
 
+void	Server::increment_nfds() {
+	_nfds++;
+}
+
+void	Server::decrement_nfds() {
+	_nfds--;
+}
 
 /* -------- CONSTRUCTORS & DESTRUCTOR -------- */
 Server::Server(std::string setpass, int setport)
