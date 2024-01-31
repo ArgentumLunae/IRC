@@ -231,7 +231,7 @@ int	Server::outgoingData(int clientfd)
 	{
 		std::string message = client->pop_message();
 		if (message == "CAP LS")		//THIS MOVES TO HANDLING COMMANDS
-			message = ":127.0.0.1 001 AgLunae :CAP * LS :\r\n";
+			message = ":127.0.0.1 001 server :CAP * LS :\r\n";
 		if (send(clientfd, message.c_str(), message.length(), 0) < 0)
 		{
 			std::cerr << "send() error: " << strerror(errno) << std::endl;

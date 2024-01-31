@@ -11,6 +11,7 @@ enum errorReplies
 	ERR_WASNOUCHNICK = 406,			// Returned by WHOWAS to indicate there is no history information for that nickname.
 	ERR_TOOMANYTARGETS = 407,		// Returned to a client which is attempting to send a PRIVMSG/NOTICE using the user@host destination format for a user@host whicch has several occurences.
 	ERR_NOORIGIN = 409,				// PING or PONG message missing the originator parameter which is required since these commands must work without valic prefixes.
+	ERR_INVALIDCAPCMD = 410,		// CAP was sent with an invalid subcommand
 	ERR_NORECIPIENT = 411,			// 
 	ERR_NOTEXTTOSEND = 412,			//
 	ERR_NOTOPLEVEL = 413,			// 
