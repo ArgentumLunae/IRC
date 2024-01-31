@@ -10,6 +10,7 @@ Client::Client(int fd, Server* server) : _server(server)
 	_username = "";
 	_correctPassword = false;
 	_channelList = std::vector<Channel*>();
+	_messageBuffer = "";
 }
 
 Client::Client(const Client &copy) : _server(copy._server)
@@ -68,6 +69,10 @@ Server*		Client::get_server() const
 std::vector<Channel*> Client::get_channelList(void)
 {
 	return (_channelList);
+}
+
+std::string	Client::get_messageBuffer(void) const {
+	return (_messageBuffer);
 }
 
 //SETTERS
@@ -151,4 +156,16 @@ std::string	Client::pop_message(void)
 bool	Client::has_incoming_messages(void) const
 {
 	return (!_incomingMessages.empty());
+}
+
+void	Client::add_to_message_buffer(std::string partialMessage)
+{
+	if (_messageBuffer.empty())
+		_messageBuffer = partialMessage;
+	else
+		_messageBuffer += partialMessage;
+}
+
+void	Client::clear_message_buffer(void) {
+		_messageBuffer.clear();
 }

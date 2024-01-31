@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/10 11:57:45 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/01/26 16:10:47 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/01/31 16:20:46 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,4 +42,20 @@ std::vector<std::string> split(std::string const & message, std::string const de
 	}
 	split.push_back(message.substr(tokenStart));
 	return split;
+}
+
+bool	is_whitespace(char c)
+{
+	if ((c >= 9 && c <= 13) || c == 32)
+		return true;
+	return false;
+}
+
+void	trim_whitespace(std::string & message)
+{
+	size_t	idx = 0;
+
+	while(is_whitespace(message[idx]))
+		idx++;
+	message = message.substr(idx, message.length() - idx);
 }

@@ -38,7 +38,7 @@ class Client
 		std::string	get_fullname() const;
 		bool		get_correctPassword() const;
 		Server*		get_server() const;
-		std::string	get_messageBuffer();
+		std::string	get_messageBuffer(void) const;
 
 		//Setters
 		int			set_nickname(std::string nickname);
@@ -52,9 +52,11 @@ class Client
 		Channel*	get_channel(std::string channelName);
 		bool		is_in_channel(std::string channelName);
 
-		void push_message(std::string message);
-		std::string pop_message(void);
-		bool has_incoming_messages(void) const;
+		void	push_message(std::string message);
+		std::string	pop_message(void);
+		bool	has_incoming_messages(void) const;
+		void	add_to_message_buffer(std::string partialMessage);
+		void	clear_message_buffer(void);
 };
 
 #endif

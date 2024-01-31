@@ -8,6 +8,7 @@
 #include "config.hpp"
 #include "server.hpp"
 #include "utils.h"
+#include "process_message.hpp"
 
 /* -------- MEMBER FUNCTIONS -------- */
 
@@ -58,7 +59,6 @@ void	Server::runServer()
 	{
 		int rc;
 
-		// std::cout << " waiting on poll()..." << std::endl;
 		rc = poll(_fds.data(), _fds.size(), timeout);
 		if (rc < 0)
 		{
@@ -87,10 +87,8 @@ void	Server::checkRevents()
 {
 	for (size_t i = 0; i < _fds.size(); i++)
 	{
-		// std::cout << _fds.size() << "\t" << i << std::endl;
 		if (_fds[i].revents & POLLIN)
 		{
-			// std::cout << "POLLIN " << i << std::endl;
 			if (i == 0)
 			{
 				clientConnect(i);
@@ -100,15 +98,9 @@ void	Server::checkRevents()
 				continue ;
 		}
 		if ((_fds[i].revents & POLLOUT) && i > 0)
-		{
-			// std::cout << "POLLOUT " << i << std::endl;
 			outgoingData(_fds[i].fd);
-		}
 		if ((_fds[i].revents & POLLHUP) && i > 0)
-		{
-			std::cout << "POLLHUP " << i << std::endl;
 			clientDisconnect(i);
-		}
 	}
 }
 
@@ -144,33 +136,63 @@ int	Server::incomingData(size_t idx)
 {
 	char buffer[512];
 	int bytesRecv = recv(_fds[idx].fd, buffer, sizeof(buffer) - 1, 0);
+	Client *client = get_client(_fds[idx].fd);
 		
 	if (bytesRecv < 0)
 		std::cerr << "recv() error: " << strerror(errno) << std::endl;
 	else if (bytesRecv > 0)
 	{
-		// bool messageComplete = false;
+		bool messageComplete = false;
 		std::vector<std::string> messages;
 		
 		buffer[bytesRecv] = '\0';
-		// if (bytesRecv >= 2 && buffer[bytesRecv - 2] == '\r' && buffer[bytesRecv - 1] == '\n')
-		// 	messageComplete = true;
-		// std::cout << "incoming data." << std::endl;
+		if (bytesRecv >= 2 && buffer[bytesRecv - 2] == '\r' && buffer[bytesRecv - 1] == '\n')
+		{
+			messageComplete = true;
+			std::cout << "messageComplete == true" << std::endl;
+		}
+		std::cout << "incoming data." << std::endl;
 		messages = split(buffer, "\r\n");
-		for (std::vector<std::string>::iterator iter = messages.begin(); iter != messages.end(); iter++)
+		for (std::vector<std::string>::iterator iter = messages.begin(); iter != (messages.end() - 1); iter++)
 		{
 			std::string currentMessage = *iter;
 			if (currentMessage.length() > 0)
 			{
 				std::cout << "Received message from client #" << _fds[idx].fd << ": " << currentMessage << std::endl;
+				if (iter == messages.begin())
+				{
+					currentMessage = client->get_messageBuffer() + currentMessage;
+					client->clear_message_buffer();
+				}
+				process_message(currentMessage);
 				msg_to_client(_fds[idx].fd, currentMessage);
+				client->clear_message_buffer();
+			}
+		}
+		if (messageComplete == true)
+		{
+			std::string finalMessage = client->get_messageBuffer() + messages.back();
+
+			if(finalMessage.length() > 0)
+			{
+				std::cout << "Received final message from client #" << _fds[idx].fd << ": " << finalMessage << std::endl;
+				process_message(finalMessage);
+				msg_to_client(_fds[idx].fd, finalMessage);
+			}
+		}
+		else 
+		{
+			std::string finalMessage = messages.back();
+
+			if(finalMessage.length() > 0)
+			{
+				std::cout << "Received partial message from client #" << _fds[idx].fd << ": " << finalMessage << std::endl;
+				client->add_to_message_buffer(finalMessage);
 			}
 		}
 	}
 	else
 	{
-		Client *client = get_client(_fds[idx].fd);
-
 		std::cout << "Other end of socket is closed." << std::endl;
 		if (!client->has_incoming_messages())
 		{
@@ -185,6 +207,7 @@ int	Server::incomingData(size_t idx)
 int	Server::msg_to_client(int clientfd, std::string msg)
 {
 	Client* client = get_client(clientfd);
+
 	if (client == nullptr)
 	{
 		std::cerr << "msg_to_client(): Client #" << clientfd << " not found." << std::endl;
@@ -209,8 +232,6 @@ int	Server::outgoingData(int clientfd)
 		std::string message = client->pop_message();
 		if (message == "CAP LS")		//THIS MOVES TO HANDLING COMMANDS
 			message = ":127.0.0.1 001 AgLunae :CAP * LS :\r\n";
-		else
-			message = ":127.0.0.1 001 AgLunae :" + message;
 		if (send(clientfd, message.c_str(), message.length(), 0) < 0)
 		{
 			std::cerr << "send() error: " << strerror(errno) << std::endl;
