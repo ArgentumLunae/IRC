@@ -164,8 +164,7 @@ int	Server::incomingData(size_t idx)
 					currentMessage = client->get_messageBuffer() + currentMessage;
 					client->clear_message_buffer();
 				}
-				process_message(currentMessage);
-				msg_to_client(_fds[idx].fd, currentMessage);
+				process_message(get_client(_fds[idx].fd), currentMessage, client->get_server());
 				client->clear_message_buffer();
 			}
 		}
@@ -176,8 +175,7 @@ int	Server::incomingData(size_t idx)
 			if(finalMessage.length() > 0)
 			{
 				std::cout << "Received final message from client #" << _fds[idx].fd << ": " << finalMessage << std::endl;
-				process_message(finalMessage);
-				msg_to_client(_fds[idx].fd, finalMessage);
+				process_message(get_client(_fds[idx].fd), finalMessage, client->get_server());
 			}
 		}
 		else 
@@ -219,19 +217,16 @@ int	Server::msg_to_client(int clientfd, std::string msg)
 
 int	Server::outgoingData(int clientfd)
 {
-	Client* client = get_client(clientfd);
+	Client *client = get_client(clientfd);
 
 	if (client == nullptr)
 	{
 		std::cerr << "outgoingData(): Client #" << clientfd << " not found." << std::endl;
 		return FAILURE;
 	}
-	// std::cout << "check if client has incoming messages." << std::endl;
 	while (client->has_incoming_messages())
 	{
 		std::string message = client->pop_message();
-		if (message == "CAP LS")		//THIS MOVES TO HANDLING COMMANDS
-			message = ":127.0.0.1 001 server :CAP * LS :\r\n";
 		if (send(clientfd, message.c_str(), message.length(), 0) < 0)
 		{
 			std::cerr << "send() error: " << strerror(errno) << std::endl;
@@ -276,8 +271,11 @@ int	    Server::remove_client(int fd)
 
 bool	Server::nickname_in_use(std::string nickname)
 {
-	if (nickname.empty())
-		return false;
+	for (std::map<int, Client>::iterator iter = _clientList.begin(); iter != _clientList.end(); iter++)
+	{
+		if (nickname == (*iter).second.get_nickname())
+			return true;
+	}
 	return false;
 }
 

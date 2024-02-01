@@ -18,7 +18,7 @@ class Client
 		std::string	_username;
 		std::string	_fullname;
 		bool		_correctPassword;
-		bool		_capabilityNegotiation;
+		// bool		_capabilityNegotiation;
 		Server		*_server;
 		std::vector<Channel *> _channelList;
 

@@ -1,21 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
-/*   splitMsg.c                                         :+:    :+:            */
+/*   password.cpp                                       :+:    :+:            */
 /*                                                     +:+                    */
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2024/01/27 14:41:29 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/01/27 14:44:15 by mteerlin      ########   odam.nl         */
+/*   Created: 2024/02/01 16:11:56 by mteerlin      #+#    #+#                 */
+/*   Updated: 2024/02/01 16:32:24 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h>
+#include "client.hpp"
+#include "server.hpp"
 
-int main(void)
-{
-    char * str = "he\0llo thi\0s is a pa\0rtial message";
-
-    write(1, str, 34);
-    return (0);
-}
+// void validate_password(Client *client, std::string password, Server *server)
+// {
+// }

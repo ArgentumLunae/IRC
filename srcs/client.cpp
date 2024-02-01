@@ -79,11 +79,33 @@ std::string	Client::get_messageBuffer(void) const {
 
 int	Client::set_nickname(std::string nickname)
 {
-    //!!!!ADD CHECKS FOR IF NICKNAME IS ACTUALLY VALID BEFORE ANY OF THIS OTHER STUFF!!!!
-
+	//!!!!ADD CHECKS FOR IF NICKNAME IS ACTUALLY VALID BEFORE ANY OF THIS OTHER STUFF!!!!
+	if (nickname == _nickname)
+		return (FAILURE);
+	if (nickname.length() > 9)
+	{
+		_server->msg_to_client(_fd, "Nickname too long, maximum of 9 characters.");
+		return (FAILURE);
+	}
+	for (int i = 0; nickname[i]; i++)
+	{
+		if (!((nickname[i] >= 'a' && nickname[i] <= 'z') || \
+			(nickname[i] >= 'A' && nickname[i] <= 'Z') || \
+			(nickname[i] >= '0' && nickname[i] <= '9') || \
+			nickname[i] == '!' || nickname[i] == '_' || nickname[i] == '-'))
+		{
+			_server->msg_to_client(_fd, "Incorrect syntax. Password may only include a-z, A-Z, 0-9, !, -, and _.");
+			return (FAILURE);
+		}
+	}
+	if (_server->nickname_in_use(nickname))
+	{
+		_server->msg_to_client(_fd, "Nickname already in use.");
+		return (FAILURE);
+	}
 	_nickname = nickname;
-    //SET THE FULLNAME HERE
-	return (true);
+	//SET THE FULLNAME HERE
+	return (SUCCESS);
 }
 
 int	Client::set_username(std::string username)

@@ -6,14 +6,16 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/01/31 17:03:09 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/01 18:04:57 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <string>
 #include <vector>
 #include <iostream>
+#include "server.hpp"
 #include "utils.h"
+#include "process_message.hpp"
 
 enum e_commands
 {
@@ -47,35 +49,37 @@ static std::vector<std::string>	tokenize_message(std::string message)
 static int isRecognizedCommand(std::string command)
 {
 	static std::vector<std::string> commandList{"CAP", "PASS", "NICK", "USER", "WHOIS", "PRIVMSG", "JOIN", "PART", "KICK", "MODE", "INVITE", "TOPIC", "PING", "PONG", "QUIT"};
-
-	for (size_t i = 0; commandList[i] != *(commandList.end()); i++)
+	size_t idx = 0;
+	
+	for (std::vector<std::string>::iterator iter = commandList.begin(); (iter + idx) != commandList.end(); idx++)
 	{
-		if (commandList[i] == command)
-			return i;
+		if (commandList[idx] == command)
+			return idx;
 	}
 	return -1;
 }
 
-int process_message(std::string message)
+int process_message(Client *client, std::string message, Server *server)
 {
 	std::vector<std::string> tokens = tokenize_message(message);
 	int	command = isRecognizedCommand(tokens[0]);
+	std::cout << "after check for command" << std::endl;
 
 	switch (command)
 	{
 		case CMD_CAP:
 		{
-			std::cout << "CAP COMMAND RECEIVED" << std::endl;
+			capabilities(client->get_fd(), tokens, server);
 			break ;
 		}
 		case CMD_PASS:
 		{
-			std::cout << "PASS COMMAND RECEIVED" << std::endl;
+			client->set_correctPassword(tokens[1]);
 			break ;
 		}
 		case CMD_NICK:
 		{
-			std::cout << "NICK COMMAND RECEIVED" << std::endl;
+			client->set_nickname(tokens[1]);
 			break ;
 		}
 		case CMD_USER:
@@ -139,7 +143,11 @@ int process_message(std::string message)
 			break ;
 		}
 		default:
+		{
+			std::cout << "message sent to client." << std::endl;
+			server->msg_to_client(client->get_fd(), message);
 			break ;
+		}
 	}
 	return 0;
 }
