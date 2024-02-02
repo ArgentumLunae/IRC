@@ -9,6 +9,8 @@ Client::Client(int fd, Server* server) : _server(server)
 	_nickname = "";
 	_username = "";
 	_correctPassword = false;
+	_isRegistred = false;
+	_capabilityNegotiation = false;
 	_channelList = std::vector<Channel*>();
 	_messageBuffer = "";
 }
@@ -59,6 +61,14 @@ std::string	Client::get_username() const
 bool		Client::get_correctPassword() const
 {
 	return (_correctPassword);
+}
+
+bool		Client::get_isRegistred() const {
+	return (_isRegistred);
+}
+
+bool		Client::get_capabilityNegotiation() const {
+	return (_capabilityNegotiation);
 }
 
 Server*		Client::get_server() const

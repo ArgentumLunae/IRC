@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/01 18:04:57 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/02 17:58:12 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,9 @@ static int isRecognizedCommand(std::string command)
 int process_message(Client *client, std::string message, Server *server)
 {
 	std::vector<std::string> tokens = tokenize_message(message);
+	std::cout << "tokens: " << tokens.size() << std::endl;
 	int	command = isRecognizedCommand(tokens[0]);
-	std::cout << "after check for command" << std::endl;
+	std::cout << "after check for command: " << command << std::endl;
 
 	switch (command)
 	{
@@ -74,17 +75,17 @@ int process_message(Client *client, std::string message, Server *server)
 		}
 		case CMD_PASS:
 		{
-			client->set_correctPassword(tokens[1]);
+			validate_password(client, tokens, server);
 			break ;
 		}
 		case CMD_NICK:
 		{
-			client->set_nickname(tokens[1]);
+			register_nickname(client, tokens, server);
 			break ;
 		}
 		case CMD_USER:
 		{
-			std::cout << "USER COMMAND RECEIVED" << std::endl;
+			register_user(client, tokens, server);
 			break ;
 		}
 		case CMD_WHOIS:

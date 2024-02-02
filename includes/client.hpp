@@ -18,7 +18,8 @@ class Client
 		std::string	_username;
 		std::string	_fullname;
 		bool		_correctPassword;
-		// bool		_capabilityNegotiation;
+		bool		_isRegistred;
+		bool		_capabilityNegotiation;
 		Server		*_server;
 		std::vector<Channel *> _channelList;
 
@@ -38,6 +39,8 @@ class Client
 		std::string	get_username() const;
 		std::string	get_fullname() const;
 		bool		get_correctPassword() const;
+		bool		get_isRegistred() const;
+		bool		get_capabilityNegotiation() const;
 		Server*		get_server() const;
 		std::string	get_messageBuffer(void) const;
 
@@ -45,6 +48,7 @@ class Client
 		int			set_nickname(std::string nickname);
 		int			set_username(std::string username);
 		int			set_correctPassword(std::string password);
+		int			set_capabilityNegotiation(bool status);
 
 		//Others
 		int			join_channel(std::string channelName, std::string password);
