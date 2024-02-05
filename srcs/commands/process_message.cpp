@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/01 18:04:57 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/05 17:24:30 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,7 @@ int process_message(Client *client, std::string message, Server *server)
 		}
 		case CMD_USER:
 		{
-			std::cout << "USER COMMAND RECEIVED" << std::endl;
+			register_username(client, tokens, server);
 			break ;
 		}
 		case CMD_WHOIS:

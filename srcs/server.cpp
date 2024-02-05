@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
+/*   server.cpp                                         :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
+/*   Updated: 2024/02/05 17:21:11 by mteerlin      ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <iostream>
 #include <fcntl.h>
 #include <errno.h>
@@ -14,7 +26,7 @@
 
 int		Server::initServer()
 {
-	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	int _serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverSocket < 0)
 	{
 		std::cerr << "socket() error: " << strerror(errno) << std::endl;

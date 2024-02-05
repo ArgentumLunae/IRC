@@ -1,24 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
-/*   username.cpp                                       :+:    :+:            */
+/*   responseMessage.hpp                                :+:    :+:            */
 /*                                                     +:+                    */
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2024/02/05 16:22:21 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/05 17:10:44 by mteerlin      ########   odam.nl         */
+/*   Created: 2024/02/05 16:29:46 by mteerlin      #+#    #+#                 */
+/*   Updated: 2024/02/05 16:59:05 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "server.hpp"
-#include "responsecodes.hpp"
-#include "responseMessage.hpp"
-#include <sstream>
+#ifndef RESPONSE_MESSAGE_HPP
+# define RESPONSE_MESSAGE_HPP
 
-void register_username(Client *client, std::vector<std::string> tokens, Server *server)
-{
-	if (tokens.size() < 5)
-		send_response_message(client, ERR_NEEDMOREPARAMS, "", server);
-	else
-		client->set_username(tokens[1]);
-}
+void send_response_message(Client *client, int responsecode, std::string specifics, Server *server);
+
+#endif
