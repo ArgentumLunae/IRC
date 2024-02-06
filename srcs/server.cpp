@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/05 17:21:11 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/06 16:45:59 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,9 @@
 
 /* -------- MEMBER FUNCTIONS -------- */
 
-int		Server::initServer()
+int		Server::init_server()
 {
-	int _serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverSocket < 0)
 	{
 		std::cerr << "socket() error: " << strerror(errno) << std::endl;
@@ -62,7 +62,7 @@ int		Server::initServer()
 	return SUCCESS;;
 }
 
-void	Server::runServer()
+void	Server::run_server()
 {
 	bool endserver = false;
 	int  timeout = 10 * 60 * 1000;         // Does this need to be part of configuration?
@@ -82,7 +82,7 @@ void	Server::runServer()
 			std::cerr << "poll() timeout: " << strerror(errno) << std::endl;
 			break ;
 		}
-		checkRevents();
+		check_revents();
 	}
 }
 
@@ -95,7 +95,7 @@ void	Server::closeServer()
 	_fds.erase(_fds.begin(), itend);
 }
 
-void	Server::checkRevents()
+void	Server::check_revents()
 {
 	for (size_t i = 0; i < _fds.size(); i++)
 	{
@@ -103,26 +103,26 @@ void	Server::checkRevents()
 		{
 			if (i == 0)
 			{
-				clientConnect(i);
+				client_connect();
 				continue ;
 			}
-			else if (incomingData(i) == FAILURE)
+			else if (incoming_data(i) == FAILURE)
 				continue ;
 		}
 		if ((_fds[i].revents & POLLOUT) && i > 0)
-			outgoingData(_fds[i].fd);
+			outgoing_data(_fds[i].fd);
 		if ((_fds[i].revents & POLLHUP) && i > 0)
-			clientDisconnect(i);
+			client_disconnect(i);
 	}
 }
 
-int	Server::clientConnect(size_t idx)
+int	Server::client_connect()
 {
 	struct sockaddr clientAddr;
 	socklen_t clientAddrLen = sizeof(clientAddr);
 	pollfd clientSocket;
 	
-	clientSocket.fd = accept(_fds[idx].fd, &clientAddr, &clientAddrLen);
+	clientSocket.fd = accept(_serverSocket, &clientAddr, &clientAddrLen);
 
 	if (clientSocket.fd < 0 && errno != EWOULDBLOCK)
 	{
@@ -136,7 +136,7 @@ int	Server::clientConnect(size_t idx)
 	return SUCCESS;
 }
 
-void	Server::clientDisconnect(size_t idx)
+void	Server::client_disconnect(size_t idx)
 {
 	std::cout << "Client #" << _fds[idx].fd << " has disconnected." << std::endl;
 	remove_client(_fds[idx].fd); //TODO write out this function
@@ -144,11 +144,12 @@ void	Server::clientDisconnect(size_t idx)
 	_fds.erase(_fds.begin() + idx);
 }
 
-int	Server::incomingData(size_t idx)
+int	Server::incoming_data(size_t idx)
 {
 	char buffer[512];
-	int bytesRecv = recv(_fds[idx].fd, buffer, sizeof(buffer) - 1, 0);
 	Client *client = get_client(_fds[idx].fd);
+	int clientfd = client->get_fd();
+	int bytesRecv = recv(clientfd, buffer, sizeof(buffer) - 1, 0);
 		
 	if (bytesRecv < 0)
 		std::cerr << "recv() error: " << strerror(errno) << std::endl;
@@ -170,13 +171,13 @@ int	Server::incomingData(size_t idx)
 			std::string currentMessage = *iter;
 			if (currentMessage.length() > 0)
 			{
-				std::cout << "Received message from client #" << _fds[idx].fd << ": " << currentMessage << std::endl;
+				std::cout << "Received message from client #" << clientfd << ": " << currentMessage << std::endl;
 				if (iter == messages.begin())
 				{
 					currentMessage = client->get_messageBuffer() + currentMessage;
 					client->clear_message_buffer();
 				}
-				process_message(get_client(_fds[idx].fd), currentMessage, client->get_server());
+				process_message(get_client(clientfd), currentMessage, client->get_server());
 				client->clear_message_buffer();
 			}
 		}
@@ -187,7 +188,7 @@ int	Server::incomingData(size_t idx)
 			if(finalMessage.length() > 0)
 			{
 				std::cout << "Received final message from client #" << _fds[idx].fd << ": " << finalMessage << std::endl;
-				process_message(get_client(_fds[idx].fd), finalMessage, client->get_server());
+				process_message(get_client(clientfd), finalMessage, client->get_server());
 			}
 		}
 		else 
@@ -206,7 +207,7 @@ int	Server::incomingData(size_t idx)
 		std::cout << "Other end of socket is closed." << std::endl;
 		if (!client->has_incoming_messages())
 		{
-			clientDisconnect(idx);
+			client_disconnect(idx);
 			return FAILURE;
 		}
 	}
@@ -227,13 +228,13 @@ int	Server::msg_to_client(int clientfd, std::string msg)
 	return SUCCESS;
 }
 
-int	Server::outgoingData(int clientfd)
+int	Server::outgoing_data(int clientfd)
 {
 	Client *client = get_client(clientfd);
 
 	if (client == nullptr)
 	{
-		std::cerr << "outgoingData(): Client #" << clientfd << " not found." << std::endl;
+		std::cerr << "outgoing_data(): Client #" << clientfd << " not found." << std::endl;
 		return FAILURE;
 	}
 	while (client->has_incoming_messages())
@@ -252,9 +253,9 @@ int	Server::outgoingData(int clientfd)
 
 int		Server::start_server()
 {
-	if (this->initServer())
+	if (this->init_server())
 		return FAILURE;
-	runServer();
+	run_server();
 	closeServer();
 	return SUCCESS;
 }

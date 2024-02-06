@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 16:56:16 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/05 17:23:03 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/06 17:02:00 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 #include "responsecodes.hpp"
 #include <sstream>
 #include <map>
+
+#include <iostream>
 
 // void err_need_more_parameters(Client *client, std::string command, Server *server)
 // {
@@ -51,10 +53,10 @@ void send_response_message(Client *client, int responsecode, std::string specifi
 	static std::map<int, std::string> responses = map_response_messages();
 	std::stringstream msg;
 
-	msg << ":" << server->get_config().get_host() << " " << responsecode;
+	msg << ":" << server->get_config().get_host() << " " << responsecode << " ";
 	if (specifics.empty())
-		msg<< " " << responses.at(responsecode);
+		msg << responses.at(responsecode) << "\r\n";
 	else
-		msg << ":" << server->get_config().get_host() << " " << responsecode << " :" << specifics << " " << responses.at(responsecode);
+		msg << ":" << specifics << responses.at(responsecode) << "\r\n";
 	server->msg_to_client(client->get_fd(), msg.str());
 }

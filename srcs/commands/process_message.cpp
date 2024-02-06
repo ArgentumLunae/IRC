@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/05 17:24:30 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/06 17:49:19 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,28 +63,28 @@ int process_message(Client *client, std::string message, Server *server)
 {
 	std::vector<std::string> tokens = tokenize_message(message);
 	int	command = isRecognizedCommand(tokens[0]);
-	std::cout << "after check for command" << std::endl;
 
 	switch (command)
 	{
 		case CMD_CAP:
 		{
-			capabilities(client->get_fd(), tokens, server);
+			capabilities(client, tokens, server);
 			break ;
 		}
 		case CMD_PASS:
 		{
-			client->set_correctPassword(tokens[1]);
+			validate_password(client, tokens, server);
 			break ;
 		}
 		case CMD_NICK:
 		{
-			client->set_nickname(tokens[1]);
+			register_nickname(client, tokens, server);
 			break ;
 		}
 		case CMD_USER:
 		{
 			register_username(client, tokens, server);
+			client->finish_registration();
 			break ;
 		}
 		case CMD_WHOIS:

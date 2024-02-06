@@ -9,6 +9,8 @@ Client::Client(int fd, Server* server) : _server(server)
 	_nickname = "";
 	_username = "";
 	_correctPassword = false;
+	_capabilityNegotiation = false;
+	_registered = false;
 	_channelList = std::vector<Channel*>();
 	_messageBuffer = "";
 }
@@ -29,6 +31,9 @@ Client	&Client::operator=(const Client &copy)
 	_fd = copy._fd;
 	_nickname = copy._nickname;
 	_username = copy._username;
+	_correctPassword = copy._correctPassword;
+	_capabilityNegotiation = copy._capabilityNegotiation;
+	_registered = copy._registered;
 	_server = copy._server;
 	_channelList = copy._channelList;
 	return (*this);
@@ -36,43 +41,51 @@ Client	&Client::operator=(const Client &copy)
 
 //GETTERS
 
-int	Client::get_fd() const
-{
+int	Client::get_fd() const {
 	return (_fd);
 }
 
-std::string	Client::get_fullname() const
-{
+std::string	Client::get_fullname() const {
 	return (_fullname);
 }
 
-std::string	Client::get_nickname() const
-{
+std::string	Client::get_nickname() const {
 	return (_nickname);
 }
 
-std::string	Client::get_username() const
-{
+std::string	Client::get_username() const {
 	return (_username);
 }
 
-bool		Client::get_correctPassword() const
-{
+bool		Client::get_correctPassword() const {
 	return (_correctPassword);
 }
 
-Server*		Client::get_server() const
-{
+Server*		Client::get_server() const {
 	return (_server);
 }
 
-std::vector<Channel*> Client::get_channelList(void)
-{
+std::vector<Channel*> Client::get_channelList(void) const {
 	return (_channelList);
+}
+
+Channel*	Client::get_channel(std::string channelName)
+{
+	std::vector<Channel*>::iterator itend = _channelList.end();
+	for (std::vector<Channel*>::iterator iter = _channelList.begin(); iter != itend; iter++)
+	{
+		if ((*iter)->get_name() == channelName)
+			return *iter;
+	}
+	return nullptr;
 }
 
 std::string	Client::get_messageBuffer(void) const {
 	return (_messageBuffer);
+}
+
+bool	Client::get_capabilityNegotiation(void) const {
+	return (_capabilityNegotiation);
 }
 
 //SETTERS
@@ -80,29 +93,7 @@ std::string	Client::get_messageBuffer(void) const {
 int	Client::set_nickname(std::string nickname)
 {
 	//!!!!ADD CHECKS FOR IF NICKNAME IS ACTUALLY VALID BEFORE ANY OF THIS OTHER STUFF!!!!
-	if (nickname == _nickname)
-		return (FAILURE);
-	if (nickname.length() > 9)
-	{
-		_server->msg_to_client(_fd, "Nickname too long, maximum of 9 characters.");
-		return (FAILURE);
-	}
-	for (int i = 0; nickname[i]; i++)
-	{
-		if (!((nickname[i] >= 'a' && nickname[i] <= 'z') || \
-			(nickname[i] >= 'A' && nickname[i] <= 'Z') || \
-			(nickname[i] >= '0' && nickname[i] <= '9') || \
-			nickname[i] == '!' || nickname[i] == '_' || nickname[i] == '-'))
-		{
-			_server->msg_to_client(_fd, "Incorrect syntax. Password may only include a-z, A-Z, 0-9, !, -, and _.");
-			return (FAILURE);
-		}
-	}
-	if (_server->nickname_in_use(nickname))
-	{
-		_server->msg_to_client(_fd, "Nickname already in use.");
-		return (FAILURE);
-	}
+	
 	_nickname = nickname;
 	//SET THE FULLNAME HERE
 	return (SUCCESS);
@@ -119,13 +110,17 @@ int	Client::set_username(std::string username)
 
 int	Client::set_correctPassword(std::string password)
 {
-	if (password != get_server()->get_pass())
+	if (password.empty() || password != get_server()->get_pass())
 	{
 		_correctPassword = false;
 		return (false);
 	}
 	_correctPassword = true;
 	return (true);
+}
+
+void	Client::set_capabilityNegotiation(bool state) {
+	_capabilityNegotiation = state;
 }
 
 //OTHERS (STILL TO DO)
@@ -142,16 +137,6 @@ int			Client::leave_channel(std::string channelName)
 	return 1;
 }
 
-Channel*	Client::get_channel(std::string channelName)
-{
-	std::vector<Channel*>::iterator itend = _channelList.end();
-	for (std::vector<Channel*>::iterator iter = _channelList.begin(); iter != itend; iter++)
-	{
-		if ((*iter)->get_name() == channelName)
-			return *iter;
-	}
-	return nullptr;
-}
 
 bool		Client::is_in_channel(std::string channelName)
 {
@@ -190,4 +175,21 @@ void	Client::add_to_message_buffer(std::string partialMessage)
 
 void	Client::clear_message_buffer(void) {
 		_messageBuffer.clear();
+}
+
+bool	Client::is_registered(void) const {
+	return (_registered);
+}
+
+void	Client::finish_registration(void)
+{
+	std::cout << "finish_registration()" << std::endl;
+	if (_correctPassword == false || _capabilityNegotiation \
+		|| _nickname.empty() || _username.empty())
+	{
+		std::cout << "correctPassword: " << _correctPassword << std::endl;
+		return ;
+	}
+	_registered = true;
+	_server->msg_to_client(_fd, ":127.0.0.1 001 server :Welcome to the server\r\n");
 }

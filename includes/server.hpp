@@ -30,13 +30,13 @@ class Server
 		struct sockaddr_in	_serverAddr;
 
 
-		int initServer();
-		void runServer();
-		void checkRevents();
-		int clientConnect(size_t idx);
-		void clientDisconnect(size_t idx);
-		int incomingData(size_t idx);
-		int outgoingData(int clientfd);
+		int init_server();
+		void run_server();
+		void check_revents();
+		int client_connect();
+		void client_disconnect(size_t idx);
+		int incoming_data(size_t idx);
+		int outgoing_data(int clientfd);
 		void closeServer();
 
 		void increment_nfds();
