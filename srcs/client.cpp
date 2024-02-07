@@ -183,11 +183,9 @@ bool	Client::is_registered(void) const {
 
 void	Client::finish_registration(void)
 {
-	std::cout << "finish_registration()" << std::endl;
 	if (_correctPassword == false || _capabilityNegotiation \
 		|| _nickname.empty() || _username.empty())
 	{
-		std::cout << "correctPassword: " << _correctPassword << std::endl;
 		return ;
 	}
 	_registered = true;
