@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/07 18:41:36 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/08 17:05:33 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@
 int		Server::init_server()
 {
 	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	_config.config_from_file("/home/mteerlin/Documents/IRC/gh_irc/configs/serverconfig.conf");
+	_config.print_config();
 	if (_serverSocket < 0)
 	{
 		std::cerr << "socket() error: " << strerror(errno) << std::endl;
@@ -112,7 +114,7 @@ void	Server::check_revents()
 		if ((_fds[i].revents & POLLOUT) && i > 0)
 			outgoing_data(_fds[i].fd);
 		if ((_fds[i].revents & POLLHUP) && i > 0)
-			client_disconnect(i);
+			client_disconnect(_fds[i].fd);
 	}
 }
 
@@ -131,17 +133,34 @@ int	Server::client_connect()
 	}
 	std::cout << "New incoming connection - #" << clientSocket.fd << std::endl;
 	clientSocket.events = POLLIN | POLLOUT;
-	_fds.push_back(clientSocket);
 	add_client(clientSocket.fd);
+	_fds.push_back(clientSocket);
 	return SUCCESS;
 }
 
-void	Server::client_disconnect(size_t idx)
+void	Server::finish_client_registration(Client *client)
 {
-	std::cout << "Client #" << _fds[idx].fd << " has disconnected." << std::endl;
-	remove_client(_fds[idx].fd); //TODO write out this function
-	close(_fds[idx].fd);
-	_fds.erase(_fds.begin() + idx);
+	if (client->get_correctPassword() == false || client->get_nickname().empty() || client->get_username().empty())
+	{
+		if (!client->get_capabilityNegotiation())
+			client_disconnect(client->get_fd());
+		return ;
+	}
+	client->set_registered(true);
+	msg_to_client(client->get_fd(), ":" + _config.get_host() + " 001 " + _config.get_serverName() + " :Welcome to the server\r\n");
+}
+
+
+void	Server::client_disconnect(int clientfd)
+{
+	std::cout << "Client #" << clientfd << " has disconnected." << std::endl;
+	remove_client(clientfd); //TODO write out this function
+	close(clientfd);
+	for (std::vector<pollfd>::iterator iter = _fds.begin(); iter != (_fds.end() - 1); iter++)
+	{
+		if ((*iter).fd == clientfd)
+			_fds.erase(iter);
+	}
 }
 
 int	Server::incoming_data(size_t idx)
@@ -207,7 +226,7 @@ int	Server::incoming_data(size_t idx)
 		std::cout << "Other end of socket is closed." << std::endl;
 		if (!client->has_incoming_messages())
 		{
-			client_disconnect(idx);
+			client_disconnect(_fds[idx].fd);
 			return FAILURE;
 		}
 	}
@@ -224,6 +243,7 @@ int	Server::msg_to_client(int clientfd, std::string msg)
 		std::cerr << "msg_to_client(): Client #" << clientfd << " not found." << std::endl;
 		return FAILURE;
 	}
+	std::cout << "Message sent to Client: \"" << msg << "\"" << std::endl;
 	client->push_message(msg);
 	return SUCCESS;
 }

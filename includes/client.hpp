@@ -50,6 +50,7 @@ class Client
 		int			set_username(std::string username);
 		int			set_correctPassword(std::string password);
 		void		set_capabilityNegotiation(bool state);
+		void		set_registered(bool const state);
 
 		//Others
 		int			join_channel(std::string channelName, std::string password);
@@ -62,7 +63,6 @@ class Client
 		void	add_to_message_buffer(std::string partialMessage);
 		void	clear_message_buffer(void);
 		bool	is_registered(void) const;
-		void	finish_registration(void);
 };
 
 #endif

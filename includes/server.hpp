@@ -30,14 +30,14 @@ class Server
 		struct sockaddr_in	_serverAddr;
 
 
-		int init_server();
-		void run_server();
-		void check_revents();
-		int client_connect();
-		void client_disconnect(size_t idx);
-		int incoming_data(size_t idx);
-		int outgoing_data(int clientfd);
-		void closeServer();
+		int		init_server();
+		void	run_server();
+		void	check_revents();
+		int		client_connect();
+		void	client_disconnect(int clientfd);
+		int		incoming_data(size_t idx);
+		int		outgoing_data(int clientfd);
+		void	closeServer();
 
 		void increment_nfds();
 		void decrement_nfds();
@@ -68,6 +68,7 @@ class Server
 		int	    remove_channel(std::string channelName);
 		int		start_server();
 		int		msg_to_client(int clientfd, std::string msg);
+		void	finish_client_registration(Client *client);
 };
 
 #endif

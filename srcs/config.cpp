@@ -2,6 +2,40 @@
 #include <fstream>
 #include <unordered_map>
 #include "config.hpp"
+#include <fstream>
+
+#include "utils.h"
+
+void	Config::config_from_file(std::string filePath)
+{
+	std::ifstream	fileStream;
+	char 			line[256];
+	std::vector<std::string>	currentLine;
+
+	fileStream.open(filePath);
+	if (!fileStream.is_open())
+		return ;
+	fileStream.getline(line, 256);
+	currentLine = split(line, " ");
+	while (!currentLine[0].empty())
+	{
+		if (currentLine.size() < 3)
+			continue ;
+		else if (currentLine[0] == "HOST")
+			_host = currentLine[2];
+		else if (currentLine[0] == "NAME")
+			_serverName = currentLine[2];
+		else if (currentLine[0] == "UMODES")
+			_userModes = currentLine[2];
+		else if (currentLine[0] == "CMODES")
+			_channelModes = currentLine[2];
+		else if (currentLine[0] == "MAX_CLIENTS")
+			_maxClients = std::stoi(currentLine[2]);
+		fileStream.getline(line, 256);
+		currentLine = split(line, " ");
+	}
+	fileStream.close();
+}
 
 Config::Config()
 {

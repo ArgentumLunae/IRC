@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/30 16:54:13 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/06 18:26:13 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/08 16:30:24 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ void capabilities(Client *client, std::vector<std::string> tokens, Server *serve
 	else if (tokens[1] == "END")
 	{
 		client->set_capabilityNegotiation(false);
-		client->finish_registration();
+		server->finish_client_registration(client);
 	}
 	else
 	{

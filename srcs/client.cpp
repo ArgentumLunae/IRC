@@ -123,6 +123,10 @@ void	Client::set_capabilityNegotiation(bool state) {
 	_capabilityNegotiation = state;
 }
 
+void	Client::set_registered(bool state) {
+	_registered = state;
+}
+
 //OTHERS (STILL TO DO)
 
 int			Client::join_channel(std::string channelName, std::string password)
@@ -179,15 +183,4 @@ void	Client::clear_message_buffer(void) {
 
 bool	Client::is_registered(void) const {
 	return (_registered);
-}
-
-void	Client::finish_registration(void)
-{
-	if (_correctPassword == false || _capabilityNegotiation \
-		|| _nickname.empty() || _username.empty())
-	{
-		return ;
-	}
-	_registered = true;
-	_server->msg_to_client(_fd, ":127.0.0.1 001 server :Welcome to the server\r\n");
 }

@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/06 14:33:26 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/06 17:30:29 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/08 13:35:54 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ static bool is_allowed_character(char c)
 
 void	register_nickname(Client *client, std::vector<std::string> tokens, Server *server)
 {
-	if (tokens.size() < 2)
+	if (tokens.size() < 2 || tokens[1].empty())
 	{
 		send_response_message(client, ERR_NONICKNAMEGIVEN, "NICK ", server);
 		return ;
@@ -46,4 +46,6 @@ void	register_nickname(Client *client, std::vector<std::string> tokens, Server *
 		server->msg_to_client(client->get_fd(), "Nickname too long, maximum of 9 characters.");
 	else if (server->nickname_in_use(tokens[1]))
 		send_response_message(client, ERR_NICKNAMEINUSE, tokens[1], server);
+	else
+		client->set_nickname(tokens[1]);
 }
