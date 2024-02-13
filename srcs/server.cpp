@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/08 17:05:33 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/13 18:05:50 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 #include "server.hpp"
 #include "utils.h"
 #include "process_message.hpp"
+#include "responsecodes.hpp"
+#include "responseMessage.hpp"
 
 /* -------- MEMBER FUNCTIONS -------- */
 
@@ -140,10 +142,11 @@ int	Server::client_connect()
 
 void	Server::finish_client_registration(Client *client)
 {
+	if (client->get_capabilityNegotiation())
+		return ;
 	if (client->get_correctPassword() == false || client->get_nickname().empty() || client->get_username().empty())
 	{
-		if (!client->get_capabilityNegotiation())
-			client_disconnect(client->get_fd());
+		client_disconnect(client->get_fd());
 		return ;
 	}
 	client->set_registered(true);
@@ -315,17 +318,18 @@ bool	Server::nickname_in_use(std::string nickname)
 int 	Server::add_channel(std::string channelName, Client &client)
 {
 	if (channelName.empty())
-	{
-		if (client.get_fd())
-			return -1;
-	}
+		return FAILURE;
+	Channel *newChannel = new Channel(channelName, &client, this);
+	_channelList.insert(std::make_pair(channelName, newChannel));
 	return SUCCESS;
 }
 
 int	    Server::remove_channel(std::string channelName)
 {
 	if (channelName.empty())
-		return -1;
+		return FAILURE;
+	delete _channelList.at(channelName);
+	_channelList.erase(channelName);
 	return SUCCESS;
 }
 
@@ -396,17 +400,17 @@ Client* Server::get_client(std::string nickname)
 	return (nullptr);
 }
 
-std::map<std::string, Channel>* Server::get_channelList()
+std::map<std::string, Channel*>* Server::get_channelList()
 {
 	return (&_channelList);
 }
 
 Channel*	Server::get_channel(std::string channelName)
 {
-	std::map<std::string, Channel>::iterator channel = _channelList.find(channelName);
+	std::map<std::string, Channel*>::iterator channel = _channelList.find(channelName);
 	if (channel == _channelList.end())
 		return (nullptr);
-	return (&channel->second);
+	return (channel->second);
 }
 /* -------- SETTERS -------- */
 

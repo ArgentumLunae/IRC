@@ -2,6 +2,8 @@
 #include "client.hpp"
 #include "server.hpp"
 
+#include <algorithm>
+
 //CONSTRUCTORS AND DECONSTRUCTOS
 
 Channel::Channel(std::string name, Client* creator, Server* server) : _server(server), _owner(creator)
@@ -10,9 +12,9 @@ Channel::Channel(std::string name, Client* creator, Server* server) : _server(se
 	_topic = "";
 	_password = "";
 	_invite = false;
-	_userlimit = 4096;
-	_clients.push_back(creator);
-	_operators.push_back(creator);
+	_userlimit = server->get_config().get_maxClients();
+	_clients = std::vector<Client*>{creator};
+	_operators = std::vector<Client*>{creator};
 }
 
 Channel::Channel(const Channel &copy) {
@@ -129,6 +131,52 @@ int	Channel::set_topic(std::string topic, Client* client)
 }
 
 // MEMBER FUNCTIONS
+
+bool	Channel::add_client(Client* client)
+{
+	std::cout << "Channel::add_client()" << std::endl;
+	std::cout << "Nr of clients in channel: " << std::endl;
+	if (client == nullptr)
+		return FAILURE;
+	if (_clients.size() < 1)
+	{
+		std::cout << "_clients vector empty" << std::endl;
+		_clients.push_back(client);
+		return SUCCESS;
+	}
+	for (size_t idx = 0; idx < _clients.size(); idx++)
+	{
+		if (_clients[idx] == client)
+		{
+			std::cout << "Client already in channel" << std::endl;
+			return FAILURE;
+		}
+	}
+	std::cout << "Add client to channel" << std::endl;
+	_clients.push_back(client);
+	return SUCCESS;
+}
+
+bool	Channel::remove_client(Client* client)
+{
+	if(client == nullptr)
+		return FAILURE;
+	_clients.erase(std::find(_clients.begin(), _clients.end(), client));
+	return SUCCESS;
+}
+
+bool	Channel::client_in_channel(std::string nickname) const
+{
+	nickname = "s";
+	return false;
+}
+
+bool	Channel::client_is_operator(std::string nickname) const
+{
+	nickname = "s";
+	return false;
+}
+
 bool Channel::check_operator_priv(Client *client)
 {
 	std::vector<Client *>::iterator itend = _operators.end();

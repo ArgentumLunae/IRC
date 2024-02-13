@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 16:56:16 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/06 17:02:00 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/13 16:56:41 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,13 @@ static std::map<int, std::string>	map_response_messages()
 	map.insert(std::make_pair(ERR_NICKNAMEINUSE, ":Nickname is already in use"));
 	map.insert(std::make_pair(ERR_NICKCOLLISION, ":Nickname collision KILL"));
 
+	map.insert(std::make_pair(ERR_CHANNELISFULL, ":Cannot join channel (+l)"));
+	map.insert(std::make_pair(ERR_INVITEONLYCHAN, ":Cannot join channel (+i)"));
+	map.insert(std::make_pair(ERR_BANNEDFROMCHAN, ":Cannot join channel (+b)"));
+	map.insert(std::make_pair(ERR_BADCHANNELKEY, ":Cannot join channel (+k)"));
+
+	map.insert(std::make_pair(RPL_TOPIC, ""));
+
 	return map;
 }
 
@@ -53,6 +60,7 @@ void send_response_message(Client *client, int responsecode, std::string specifi
 	static std::map<int, std::string> responses = map_response_messages();
 	std::stringstream msg;
 
+	std::cout << "send_response_message()" << std::endl;
 	msg << ":" << server->get_config().get_host() << " " << responsecode << " ";
 	if (specifics.empty())
 		msg << responses.at(responsecode) << "\r\n";

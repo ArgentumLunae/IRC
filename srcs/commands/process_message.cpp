@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/08 16:30:19 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/13 16:07:35 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ int process_message(Client *client, std::string message, Server *server)
 		}
 		case CMD_JOIN:
 		{
-			std::cout << "JOIN COMMAND RECEIVED" << std::endl;
+			join_command(client, tokens, server);
 			break ;
 		}
 		case CMD_PART:
