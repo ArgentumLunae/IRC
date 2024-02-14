@@ -13,6 +13,7 @@ Channel::Channel(std::string name, Client* creator, Server* server) : _server(se
 	_password = "";
 	_invite = false;
 	_userlimit = server->get_config().get_maxClients();
+	_owner = creator;
 	_clients = std::vector<Client*>{creator};
 	_operators = std::vector<Client*>{creator};
 }
@@ -134,26 +135,24 @@ int	Channel::set_topic(std::string topic, Client* client)
 
 bool	Channel::add_client(Client* client)
 {
-	std::cout << "Channel::add_client()" << std::endl;
-	std::cout << "Nr of clients in channel: " << std::endl;
 	if (client == nullptr)
 		return FAILURE;
-	if (_clients.size() < 1)
+	std::vector<Client*> list = _clients;
+	if (_clients.empty())
 	{
-		std::cout << "_clients vector empty" << std::endl;
 		_clients.push_back(client);
 		return SUCCESS;
 	}
 	for (size_t idx = 0; idx < _clients.size(); idx++)
 	{
-		if (_clients[idx] == client)
+		if (_clients.at(idx) == client)
 		{
 			std::cout << "Client already in channel" << std::endl;
 			return FAILURE;
 		}
 	}
-	std::cout << "Add client to channel" << std::endl;
 	_clients.push_back(client);
+	client->add_channel(this);
 	return SUCCESS;
 }
 

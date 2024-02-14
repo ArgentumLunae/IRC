@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 16:56:16 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/13 16:56:41 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/14 18:00:31 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,11 +60,11 @@ void send_response_message(Client *client, int responsecode, std::string specifi
 	static std::map<int, std::string> responses = map_response_messages();
 	std::stringstream msg;
 
-	std::cout << "send_response_message()" << std::endl;
 	msg << ":" << server->get_config().get_host() << " " << responsecode << " ";
 	if (specifics.empty())
 		msg << responses.at(responsecode) << "\r\n";
 	else
 		msg << ":" << specifics << responses.at(responsecode) << "\r\n";
+	std::cout << msg.str() << std::endl;
 	server->msg_to_client(client->get_fd(), msg.str());
 }

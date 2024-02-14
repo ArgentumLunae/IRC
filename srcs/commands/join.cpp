@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/09 15:37:20 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/13 18:02:26 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/14 18:10:15 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,22 +36,23 @@ void	join_command(Client *client, std::vector<std::string> tokens, Server *serve
 	{
 		currentChannel = server->get_channel(*iter);
 		if (currentChannel == nullptr)
+		{
 			server->add_channel(*iter, *client);
+			currentChannel = server->get_channel(*iter);
+		}
 		if (idx < channelKeys.size() && !currentChannel->get_password().empty())
 		{
-			if (channelKeys[idx] != currentChannel->get_password())
+			if (channelKeys.at(idx) != currentChannel->get_password())
 			{
 				send_response_message(client, ERR_BADCHANNELKEY, "", server);
 				return ;
 			}
 		}
-		std::cout << "|-----DEBUG-----|" << std::endl;
 		if (currentChannel->add_client(client))
 		{
-			std::cout << "|-----DEBUG-----|" << std::endl;
 			send_response_message(client, RPL_TOPIC, currentChannel->get_name() + " :" + currentChannel->get_topic(), server);
+			server->msg_to_client(client->get_fd(), "NAMES " + currentChannel->get_name());
 		}
 		idx++;
 	}
-	 
 }

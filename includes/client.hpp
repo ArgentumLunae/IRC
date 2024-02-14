@@ -53,6 +53,7 @@ class Client
 		void		set_registered(bool const state);
 
 		//Others
+		int			add_channel(Channel *channel);
 		int			join_channel(std::string channelName, std::string password);
 		int			leave_channel(std::string channelName);
 		bool		is_in_channel(std::string channelName);

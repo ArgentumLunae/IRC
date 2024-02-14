@@ -129,6 +129,16 @@ void	Client::set_registered(bool state) {
 
 //OTHERS (STILL TO DO)
 
+int			Client::add_channel(Channel *channel)
+{
+	if (!is_in_channel(channel->get_name()))
+	{
+		_channelList.push_back(channel);
+		return SUCCESS;
+	}
+	return FAILURE;
+}
+
 int			Client::join_channel(std::string channelName, std::string password)
 {
 	channelName = password;

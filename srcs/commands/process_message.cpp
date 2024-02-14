@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/13 16:07:35 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/14 18:06:36 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ enum e_commands
 	CMD_NICK,
 	CMD_USER,
 	CMD_WHOIS,
+	CMD_NAMES,
 	CMD_PRIVMSG,
 	CMD_JOIN,
 	CMD_PART,
@@ -48,7 +49,7 @@ static std::vector<std::string>	tokenize_message(std::string message)
 
 static int isRecognizedCommand(std::string command)
 {
-	static std::vector<std::string> commandList{"CAP", "PASS", "NICK", "USER", "WHOIS", "PRIVMSG", "JOIN", "PART", "KICK", "MODE", "INVITE", "TOPIC", "PING", "PONG", "QUIT"};
+	static std::vector<std::string> commandList{"CAP", "PASS", "NICK", "USER", "WHOIS", "NAMES", "PRIVMSG", "JOIN", "PART", "KICK", "MODE", "INVITE", "TOPIC", "PING", "PONG", "QUIT"};
 	size_t idx = 0;
 	
 	for (std::vector<std::string>::iterator iter = commandList.begin(); (iter + idx) != commandList.end(); idx++)
@@ -90,6 +91,11 @@ int process_message(Client *client, std::string message, Server *server)
 		case CMD_WHOIS:
 		{
 			std::cout << "WHOIS COMMAND RECEIVED" << std::endl;
+			break ;
+		}
+		case CMD_NAMES:
+		{
+			std::cout << "NAMES COMMAND RECEIVED" << std::endl;
 			break ;
 		}
 		case CMD_PRIVMSG:
@@ -145,7 +151,7 @@ int process_message(Client *client, std::string message, Server *server)
 		default:
 		{
 			std::cout << "message sent to client." << std::endl;
-			server->msg_to_client(client->get_fd(), message);
+			server->msg_to_client(client->get_fd(), ":" + client->get_nickname() + message);
 			break ;
 		}
 	}

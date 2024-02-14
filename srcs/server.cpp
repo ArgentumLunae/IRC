@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/13 18:05:50 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/14 14:04:55 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,7 +150,7 @@ void	Server::finish_client_registration(Client *client)
 		return ;
 	}
 	client->set_registered(true);
-	msg_to_client(client->get_fd(), ":" + _config.get_host() + " 001 " + _config.get_serverName() + " :Welcome to the server\r\n");
+	msg_to_client(client->get_fd(), ":" + _config.get_host() + " 001 " + client->get_nickname() + " :Welcome to the server\r\n");
 }
 
 
@@ -382,6 +382,7 @@ std::map<int, Client>* Server::get_clientList()
 
 //in case the client isn't in the list at all, chuck a nullptr back? probably a better way to do this
 //I use this method for all the others, should ask Michiel at some point if he has a better idea.
+// Michiel: I'm fine with chucking back return values for such things
 Client*	Server::get_client(int fd)
 {
 	std::map<int, Client>::iterator client = _clientList.find(fd);
