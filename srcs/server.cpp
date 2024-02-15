@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/14 14:04:55 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/15 14:34:50 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@
 #include "server.hpp"
 #include "utils.h"
 #include "process_message.hpp"
-#include "responsecodes.hpp"
 #include "responseMessage.hpp"
 
 /* -------- MEMBER FUNCTIONS -------- */
@@ -319,6 +318,8 @@ int 	Server::add_channel(std::string channelName, Client &client)
 {
 	if (channelName.empty())
 		return FAILURE;
+	if (get_channel(channelName) != nullptr)
+		return SUCCESS;
 	Channel *newChannel = new Channel(channelName, &client, this);
 	_channelList.insert(std::make_pair(channelName, newChannel));
 	return SUCCESS;

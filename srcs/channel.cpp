@@ -147,7 +147,7 @@ bool	Channel::add_client(Client* client)
 	{
 		if (_clients.at(idx) == client)
 		{
-			std::cout << "Client already in channel" << std::endl;
+			std::cout << "Client already in channel" << std::endl; // FOR TESTING, REMOVE LATER.
 			return FAILURE;
 		}
 	}

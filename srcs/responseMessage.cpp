@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 16:56:16 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/14 18:00:31 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/15 17:53:47 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,22 +16,6 @@
 #include <map>
 
 #include <iostream>
-
-// void err_need_more_parameters(Client *client, std::string command, Server *server)
-// {
-// 	std::stringstream errorMsg;
-
-// 	errorMsg << ":" << server->get_config().get_host() << " " << ERR_NEEDMOREPARAMS << " :" << command << " :Not enough parameters";
-// 	server->msg_to_client(client->get_fd(), errorMsg.str());
-// }
-
-// void err_already_registered(Client *client, std::string command, Server *server)
-// {
-// 	std::stringstream errorMsg;
-
-// 	errorMsg << ":" << server->get_config().get_host() << " " << ERR_ALREADYREGISTRED << " :" << " :You may not reregister";
-// 	server->msg_to_client(client->get_fd(), errorMsg.str());
-// }
 
 static std::map<int, std::string>	map_response_messages()
 {
@@ -49,8 +33,6 @@ static std::map<int, std::string>	map_response_messages()
 	map.insert(std::make_pair(ERR_INVITEONLYCHAN, ":Cannot join channel (+i)"));
 	map.insert(std::make_pair(ERR_BANNEDFROMCHAN, ":Cannot join channel (+b)"));
 	map.insert(std::make_pair(ERR_BADCHANNELKEY, ":Cannot join channel (+k)"));
-
-	map.insert(std::make_pair(RPL_TOPIC, ""));
 
 	return map;
 }

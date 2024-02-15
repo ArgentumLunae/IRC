@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/14 18:06:36 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/15 15:48:14 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ int process_message(Client *client, std::string message, Server *server)
 		}
 		case CMD_NAMES:
 		{
-			std::cout << "NAMES COMMAND RECEIVED" << std::endl;
+			list_names(client, tokens, server);
 			break ;
 		}
 		case CMD_PRIVMSG:
