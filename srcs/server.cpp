@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/15 14:34:50 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/18 17:18:36 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -268,7 +268,7 @@ int	Server::outgoing_data(int clientfd)
 			return FAILURE;
 		}
 		else
-			std::cout << "Client #" << client->get_fd() << " receives: " << message << std::endl;
+			std::cout << "Client #" << client->get_fd() << " receives: \"" << message << "\"" << std::endl;
 	}
 	return SUCCESS;
 }

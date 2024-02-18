@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/14 18:06:52 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/15 18:30:55 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/18 17:37:40 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,20 +33,22 @@ static bool	is_channel_operator(Client *client, Channel *channel)
 
 static std::string	string_nicknames(std::vector<Client*> clientList, Channel *channel)
 {
-	std::stringstream sstream;
+	std::string nickList("");
 	std::string prefix = "";
 
-	sstream << channel->get_name() << " :";
+	// sstream << channel->get_name() << " :";
 	for (std::vector<Client*>::iterator iter = clientList.begin(); iter != clientList.end(); iter++)
 	{
+		if (iter != clientList.begin())
+			nickList += " ";
 		if (is_channel_operator(*iter, channel))
 			prefix = "@";
 		else
 			prefix = "";
-		sstream << prefix << (*iter)->get_nickname() << " ";
+		nickList += prefix + (*iter)->get_nickname();
 	}
-	std::cout << sstream.str() << std::endl;
-	return sstream.str();
+	std::cout << nickList << std::endl;
+	return nickList;
 }
 
 void list_names(Client *client, std::vector<std::string> tokens, Server *server)
@@ -68,11 +70,11 @@ void list_names(Client *client, std::vector<std::string> tokens, Server *server)
 		{
 			std::vector<Client*> clientList = currentChannel->get_clients();
 
-			sstream << ":" << server->get_config().get_host() << " " << RPL_NAMREPLY << " " << *iter << " :";
+			sstream << ":" << server->get_config().get_host() << " " << RPL_NAMREPLY << " " << client->get_nickname() << " @ " << *iter << " :";
 			server->msg_to_client(client->get_fd(),  sstream.str() + string_nicknames(currentChannel->get_clients(), currentChannel) + "\r\n");
 		}
 		sstream.str("");
-		sstream << ":" << server->get_config().get_host() + " " << RPL_ENDOFNAMES << " :\r\n";
+		sstream << ":" << server->get_config().get_host() + " " << RPL_ENDOFNAMES << " " << client->get_nickname() << " " << *iter << " :\r\n";
 		std::cout << sstream.str() << std::endl;
 		server->msg_to_client(client->get_fd(), sstream.str());
 	}
