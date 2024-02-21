@@ -135,19 +135,22 @@ int	Channel::set_topic(std::string topic, Client* client)
 
 bool	Channel::add_client(Client* client)
 {
+	std::cout << "Channel::add_client()" << std::endl;
 	if (client == nullptr)
 		return FAILURE;
 	std::vector<Client*> list = _clients;
+	std::cout << "Client to add: " << client->get_nickname() << std::endl;
 	if (_clients.empty())
 	{
 		_clients.push_back(client);
+		client->add_channel(this);
 		return SUCCESS;
 	}
 	for (size_t idx = 0; idx < _clients.size(); idx++)
 	{
 		if (_clients.at(idx) == client)
 		{
-			std::cout << "Client already in channel" << std::endl; // FOR TESTING, REMOVE LATER.
+			std::cout << "Client already in channel: " << _clients[idx]->get_nickname() << " at index " << idx << std::endl; // FOR TESTING, REMOVE LATER.
 			return FAILURE;
 		}
 	}
@@ -158,22 +161,40 @@ bool	Channel::add_client(Client* client)
 
 bool	Channel::remove_client(Client* client)
 {
+	int clientPos;
+
+
 	if(client == nullptr)
 		return FAILURE;
-	_clients.erase(std::find(_clients.begin(), _clients.end(), client));
+	clientPos = client_in_channel(client);
+	if (clientPos >= 0)
+		_clients.erase(_clients.begin() + clientPos);
+	clientPos = client_is_operator(client);
+	if (clientPos >= 0)
+		_operators.erase(_operators.begin() + clientPos);
+	if (_clients.empty())
+		_server->remove_channel(_name);
 	return SUCCESS;
 }
 
-bool	Channel::client_in_channel(std::string nickname) const
+int	Channel::client_in_channel(Client* client)
 {
-	nickname = "s";
-	return false;
+	for (size_t idx= 0; idx < _clients.size(); idx++)
+	{
+		if (_clients[idx] == client)
+			return idx;
+	}
+	return -1;
 }
 
-bool	Channel::client_is_operator(std::string nickname) const
+int	Channel::client_is_operator(Client* client)
 {
-	nickname = "s";
-	return false;
+	for (size_t idx= 0; idx < _clients.size(); idx++)
+	{
+		if (_operators[idx] == client)
+			return idx;
+	}
+	return -1;
 }
 
 bool Channel::check_operator_priv(Client *client)

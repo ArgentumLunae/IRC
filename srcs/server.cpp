@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/18 17:18:36 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/21 17:46:06 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,6 +145,7 @@ void	Server::finish_client_registration(Client *client)
 		return ;
 	if (client->get_correctPassword() == false || client->get_nickname().empty() || client->get_username().empty())
 	{
+		std::cout << "Client registration failed." << std::endl;
 		client_disconnect(client->get_fd());
 		return ;
 	}
@@ -155,14 +156,18 @@ void	Server::finish_client_registration(Client *client)
 
 void	Server::client_disconnect(int clientfd)
 {
-	std::cout << "Client #" << clientfd << " has disconnected." << std::endl;
 	remove_client(clientfd); //TODO write out this function
 	close(clientfd);
-	for (std::vector<pollfd>::iterator iter = _fds.begin(); iter != (_fds.end() - 1); iter++)
+	for (std::vector<pollfd>::iterator iter = _fds.begin(); iter != _fds.end(); ++iter)
 	{
-		if ((*iter).fd == clientfd)
+		if (iter->fd == clientfd)
+		{
 			_fds.erase(iter);
+			std::cout << "Client #" << clientfd << " has disconnected." << std::endl;
+			return ;
+		}
 	}
+	std::cout << "Client #" << clientfd << " not found." << std::endl;
 }
 
 int	Server::incoming_data(size_t idx)
@@ -186,13 +191,15 @@ int	Server::incoming_data(size_t idx)
 			std::cout << "messageComplete == true" << std::endl;
 		}
 		std::cout << "incoming data." << std::endl;
-		messages = split(buffer, "\r\n");
+		messages = split(buffer, '\n');
 		for (std::vector<std::string>::iterator iter = messages.begin(); iter != (messages.end() - 1); iter++)
 		{
 			std::string currentMessage = *iter;
 			if (currentMessage.length() > 0)
 			{
-				std::cout << "Received message from client #" << clientfd << ": " << currentMessage << std::endl;
+				std::cout << "Received message from client #" << clientfd << ": [" << currentMessage << "]" << std::endl;
+				if (currentMessage[currentMessage.length() - 1] == '\r')
+					currentMessage = currentMessage.substr(0, currentMessage.length() - 1);
 				if (iter == messages.begin())
 				{
 					currentMessage = client->get_messageBuffer() + currentMessage;
@@ -208,8 +215,10 @@ int	Server::incoming_data(size_t idx)
 
 			if(finalMessage.length() > 0)
 			{
-				std::cout << "Received final message from client #" << _fds[idx].fd << ": " << finalMessage << std::endl;
+				finalMessage = finalMessage.substr(0, finalMessage.length() - 1);
+				std::cout << "Received final message from client #" << _fds[idx].fd << ": [ " << finalMessage << " ]" << std::endl;
 				process_message(get_client(clientfd), finalMessage, client->get_server());
+				client->clear_message_buffer();
 			}
 		}
 		else 
@@ -218,7 +227,7 @@ int	Server::incoming_data(size_t idx)
 
 			if(finalMessage.length() > 0)
 			{
-				std::cout << "Received partial message from client #" << _fds[idx].fd << ": " << finalMessage << std::endl;
+				std::cout << "Received partial message from client #" << _fds[idx].fd << ": [ " << finalMessage << " ]" << std::endl;
 				client->add_to_message_buffer(finalMessage);
 			}
 		}
@@ -262,7 +271,7 @@ int	Server::outgoing_data(int clientfd)
 	while (client->has_incoming_messages())
 	{
 		std::string message = client->pop_message();
-		if (send(clientfd, message.c_str(), message.length(), 0) < 0)
+		if (send(clientfd, message.c_str(), message.length(), MSG_NOSIGNAL) < 0)
 		{
 			std::cerr << "send() error: " << strerror(errno) << std::endl;
 			return FAILURE;
@@ -286,7 +295,7 @@ int 	Server::add_client(int fd)
 {
 	if (get_client(fd) != nullptr)
 		return (-1);	// look into using specific defines for this.
-	Client client(fd, this);
+	Client *client = new Client(fd, this);
 	_clientList.insert(std::make_pair(fd, client));
 	std::cout << "Client added to server client list" << std::endl;
 	return SUCCESS;
@@ -298,17 +307,21 @@ int	    Server::remove_client(int fd)
 	//disconnect client from all connected channels
 	//associated client lists
 	//double check if required to be removed from operator lists
-	if (get_client(fd) == nullptr)
+	std::cout << "Server::remove_client()" << std::endl;
+	Client *client = get_client(fd);
+	if (client == nullptr)
 		return (-1);
-	_clientList.erase(_clientList.find(fd));
+	client->leave_all_channels();
+	delete client;
+	_clientList.erase(fd);
 	return SUCCESS;	
 }
 
 bool	Server::nickname_in_use(std::string nickname)
 {
-	for (std::map<int, Client>::iterator iter = _clientList.begin(); iter != _clientList.end(); iter++)
+	for (std::map<int, Client*>::iterator iter = _clientList.begin(); iter != _clientList.end(); iter++)
 	{
-		if (nickname == (*iter).second.get_nickname())
+		if (nickname == (*iter).second->get_nickname())
 			return true;
 	}
 	return false;
@@ -321,13 +334,14 @@ int 	Server::add_channel(std::string channelName, Client &client)
 	if (get_channel(channelName) != nullptr)
 		return SUCCESS;
 	Channel *newChannel = new Channel(channelName, &client, this);
+	client.add_channel(newChannel);
 	_channelList.insert(std::make_pair(channelName, newChannel));
 	return SUCCESS;
 }
 
 int	    Server::remove_channel(std::string channelName)
 {
-	if (channelName.empty())
+	if (channelName.empty() || !_channelList.at(channelName)->get_clients().empty())
 		return FAILURE;
 	delete _channelList.at(channelName);
 	_channelList.erase(channelName);
@@ -376,9 +390,9 @@ int	Server::get_port() const
 	return (_port);
 }
 
-std::map<int, Client>* Server::get_clientList()
+std::map<int, Client*> Server::get_clientList()
 {
-	return (&_clientList);
+	return (_clientList);
 }
 
 //in case the client isn't in the list at all, chuck a nullptr back? probably a better way to do this
@@ -386,18 +400,18 @@ std::map<int, Client>* Server::get_clientList()
 // Michiel: I'm fine with chucking back return values for such things
 Client*	Server::get_client(int fd)
 {
-	std::map<int, Client>::iterator client = _clientList.find(fd);
+	std::map<int, Client*>::iterator client = _clientList.find(fd);
 	if (client == _clientList.end())
 		return (nullptr);
-	return (&client->second);
+	return (client->second);
 }
 
 Client* Server::get_client(std::string nickname)
 {
-	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); it++)
+	for (std::map<int, Client*>::iterator it = _clientList.begin(); it != _clientList.end(); it++)
 	{
-		if (it->second.get_nickname() == nickname)
-			return (&it->second);
+		if (it->second->get_nickname() == nickname)
+			return (it->second);
 	}
 	return (nullptr);
 }

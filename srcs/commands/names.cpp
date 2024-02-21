@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/14 18:06:52 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/18 17:37:40 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/21 15:21:46 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,21 +15,6 @@
 #include "responseMessage.hpp"
 #include "responsecodes.hpp"
 #include <sstream>
-
-static bool	is_channel_operator(Client *client, Channel *channel)
-{
-	std::vector<Client*> operators = channel->get_operators();
-	for (std::vector<Client*>::iterator iter = operators.begin(); iter != operators.end(); iter++)
-	{
-		if (client == *iter)
-		{
-			std::cout << client->get_nickname() << " is an OPERATOR" << std::endl;
-			return true;
-		}
-	}
-	std::cout << client->get_nickname() << " isn't an OPERATOR" << std::endl;
-	return false;
-}
 
 static std::string	string_nicknames(std::vector<Client*> clientList, Channel *channel)
 {
@@ -41,7 +26,7 @@ static std::string	string_nicknames(std::vector<Client*> clientList, Channel *ch
 	{
 		if (iter != clientList.begin())
 			nickList += " ";
-		if (is_channel_operator(*iter, channel))
+		if (channel->client_is_operator(*iter))
 			prefix = "@";
 		else
 			prefix = "";

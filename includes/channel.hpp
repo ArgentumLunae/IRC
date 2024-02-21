@@ -55,8 +55,8 @@ class Channel
         //Others (Channel commands)
 		bool	add_client(Client* client);
 		bool	remove_client(Client* client);
-		bool	client_in_channel(std::string nickname) const;
-		bool	client_is_operator(std::string nickname) const;
+		int		client_in_channel(Client* client);
+		int		client_is_operator(Client* client);
 
 		//Others (User actions)
 		int		leave_channel(Client* client);

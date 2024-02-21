@@ -21,7 +21,7 @@ class Server
         std::string _name;
 		std::string	_pass;
 		int			_port;
-		std::map<int, Client> 			_clientList;
+		std::map<int, Client*> 			_clientList;
 		std::map<std::string, Channel*>	_channelList;
 
 		std::vector<pollfd>	_fds;	// Socket file descriptors currently in use
@@ -52,7 +52,7 @@ class Server
 		std::string	get_name() const;
 		std::string	get_pass() const;
 		int			get_port() const;
-		std::map<int, Client>* get_clientList();
+		std::map<int, Client*> get_clientList();
 		Client*		get_client(int fd); //get a client using their fd
 		Client*		get_client(std::string nickname); //get a client by using their nickname
 		std::map<std::string, Channel*>* get_channelList();

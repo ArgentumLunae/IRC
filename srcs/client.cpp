@@ -93,6 +93,7 @@ bool	Client::get_capabilityNegotiation(void) const {
 int	Client::set_nickname(std::string nickname)
 {
 	//!!!!ADD CHECKS FOR IF NICKNAME IS ACTUALLY VALID BEFORE ANY OF THIS OTHER STUFF!!!!
+	// Checks have been added in the NICK command code; see nickname.cpp
 	
 	_nickname = nickname;
 	//SET THE FULLNAME HERE
@@ -131,9 +132,11 @@ void	Client::set_registered(bool state) {
 
 int			Client::add_channel(Channel *channel)
 {
+	std::cout << "Client::add_channel()" << std::endl;
 	if (!is_in_channel(channel->get_name()))
 	{
 		_channelList.push_back(channel);
+		std::cout << _channelList.front()->get_name() << std::endl;
 		return SUCCESS;
 	}
 	return FAILURE;
@@ -145,12 +148,32 @@ int			Client::join_channel(std::string channelName, std::string password)
 	return 1;
 }
 
-int			Client::leave_channel(std::string channelName)
+int			Client::leave_channel(Channel *channel)
 {
-	channelName = "me";
-	return 1;
+	for (std::vector<Channel*>::iterator iter = _channelList.begin(); iter != _channelList.end(); iter++)
+	{
+		if (*iter == channel)
+		{
+			channel->remove_client(this);
+			_channelList.erase(iter);
+			return SUCCESS;
+		}
+	}
+	return FAILURE;
 }
 
+void			Client::leave_all_channels(void)
+{
+	std::cout << "Client::leave_all_channels()" << std::endl;
+	std::cout << _channelList.front()->get_name() << std::endl;
+	for (std::vector<Channel*>::iterator iter = _channelList.begin(); iter != _channelList.end(); iter++)
+	{
+			(*iter)->remove_client(this);
+			_channelList.erase(iter);
+			if (_channelList.empty())
+				break ;
+	}
+}
 
 bool		Client::is_in_channel(std::string channelName)
 {
