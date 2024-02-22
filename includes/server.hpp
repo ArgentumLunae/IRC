@@ -68,7 +68,7 @@ class Server
 		int	    remove_channel(std::string channelName);
 		int		start_server();
 		int		msg_to_client(int clientfd, std::string msg);
-		void	finish_client_registration(Client *client);
+		int		finish_client_registration(Client *client);
 };
 
 #endif

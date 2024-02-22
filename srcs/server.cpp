@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/21 17:46:06 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/22 16:50:05 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,20 +139,20 @@ int	Server::client_connect()
 	return SUCCESS;
 }
 
-void	Server::finish_client_registration(Client *client)
+int	Server::finish_client_registration(Client *client)
 {
 	if (client->get_capabilityNegotiation())
-		return ;
+		return SUCCESS;
 	if (client->get_correctPassword() == false || client->get_nickname().empty() || client->get_username().empty())
 	{
 		std::cout << "Client registration failed." << std::endl;
 		client_disconnect(client->get_fd());
-		return ;
+		return FAILURE;
 	}
 	client->set_registered(true);
 	msg_to_client(client->get_fd(), ":" + _config.get_host() + " 001 " + client->get_nickname() + " :Welcome to the server\r\n");
+	return SUCCESS;
 }
-
 
 void	Server::client_disconnect(int clientfd)
 {
@@ -197,15 +197,16 @@ int	Server::incoming_data(size_t idx)
 			std::string currentMessage = *iter;
 			if (currentMessage.length() > 0)
 			{
-				std::cout << "Received message from client #" << clientfd << ": [" << currentMessage << "]" << std::endl;
 				if (currentMessage[currentMessage.length() - 1] == '\r')
 					currentMessage = currentMessage.substr(0, currentMessage.length() - 1);
+				std::cout << "Received message from client #" << clientfd << ": [" << currentMessage << "]" << std::endl;
 				if (iter == messages.begin())
 				{
 					currentMessage = client->get_messageBuffer() + currentMessage;
 					client->clear_message_buffer();
 				}
-				process_message(get_client(clientfd), currentMessage, client->get_server());
+				if (process_message(get_client(clientfd), currentMessage, client->get_server()) == FAILURE)
+					return FAILURE;
 				client->clear_message_buffer();
 			}
 		}

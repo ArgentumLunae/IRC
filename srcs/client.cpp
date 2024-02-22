@@ -165,7 +165,7 @@ int			Client::leave_channel(Channel *channel)
 void			Client::leave_all_channels(void)
 {
 	std::cout << "Client::leave_all_channels()" << std::endl;
-	std::cout << _channelList.front()->get_name() << std::endl;
+	// std::cout << _channelList.front()->get_name() << std::endl;
 	for (std::vector<Channel*>::iterator iter = _channelList.begin(); iter != _channelList.end(); iter++)
 	{
 			(*iter)->remove_client(this);

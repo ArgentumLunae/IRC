@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/21 16:13:29 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/22 17:36:45 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,8 @@ int process_message(Client *client, std::string message, Server *server)
 		case CMD_USER:
 		{
 			register_username(client, tokens, server);
-			server->finish_client_registration(client);
+			if (server->finish_client_registration(client) == FAILURE)
+				return FAILURE;
 			break ;
 		}
 		case CMD_WHOIS:
@@ -110,7 +111,7 @@ int process_message(Client *client, std::string message, Server *server)
 		}
 		case CMD_PART:
 		{
-			std::cout << "PART COMMAND RECEIVED" << std::endl;
+			part_command(client, tokens, server);
 			break ;
 		}
 		case CMD_KICK:
@@ -155,5 +156,5 @@ int process_message(Client *client, std::string message, Server *server)
 			break ;
 		}
 	}
-	return 0;
+	return SUCCESS;
 }

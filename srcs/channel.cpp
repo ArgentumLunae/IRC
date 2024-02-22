@@ -16,6 +16,9 @@ Channel::Channel(std::string name, Client* creator, Server* server) : _server(se
 	_owner = creator;
 	_clients = std::vector<Client*>{creator};
 	_operators = std::vector<Client*>{creator};
+
+	std::cout << _clients.front()->get_nickname() << std::endl;
+	std::cout << _operators.front()->get_nickname() << std::endl;
 }
 
 Channel::Channel(const Channel &copy) {
@@ -163,17 +166,22 @@ bool	Channel::remove_client(Client* client)
 {
 	int clientPos;
 
-
+	std::cout << "Channel::remove_client()" << std::endl;
 	if(client == nullptr)
 		return FAILURE;
 	clientPos = client_in_channel(client);
+	std::cout << "Client on list position: " << clientPos << std::endl;
 	if (clientPos >= 0)
 		_clients.erase(_clients.begin() + clientPos);
 	clientPos = client_is_operator(client);
+	std::cout << "Operator on list position: " << clientPos << std::endl;
 	if (clientPos >= 0)
 		_operators.erase(_operators.begin() + clientPos);
 	if (_clients.empty())
+	{
+		std::cout << "Serer::remove_channel()" << std::endl;
 		_server->remove_channel(_name);
+	}
 	return SUCCESS;
 }
 
