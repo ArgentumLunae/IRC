@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/31 16:56:07 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/22 17:36:20 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/23 18:04:51 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,5 +25,6 @@ void	register_username(Client *client, std::vector<std::string> tokens, Server *
 void	join_command(Client *client, std::vector<std::string> tokens, Server *server);
 void	part_command(Client *client, std::vector<std::string> tokens, Server *server);
 void	list_names(Client *client, std::vector<std::string> tokens, Server *server);
+void	private_message(Client *client, std::vector<std::string> tokens, Server *server);
 
 #endif

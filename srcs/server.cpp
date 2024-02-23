@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/22 16:50:05 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/23 15:03:41 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,6 +170,17 @@ void	Server::client_disconnect(int clientfd)
 	std::cout << "Client #" << clientfd << " not found." << std::endl;
 }
 
+// Companion function for incomming_data(), where best to put this?
+static bool	id_is_empty_message(std::string message)
+{
+	if (message[0] == '\r')
+	{
+		std::cout << "received empty message." << std::endl;
+		return true;
+	}
+	return false;
+}
+
 int	Server::incoming_data(size_t idx)
 {
 	char buffer[512];
@@ -190,13 +201,17 @@ int	Server::incoming_data(size_t idx)
 			messageComplete = true;
 			std::cout << "messageComplete == true" << std::endl;
 		}
-		std::cout << "incoming data." << std::endl;
+		std::cout << "incoming data of " << bytesRecv << " bytes." << std::endl;
 		messages = split(buffer, '\n');
 		for (std::vector<std::string>::iterator iter = messages.begin(); iter != (messages.end() - 1); iter++)
 		{
 			std::string currentMessage = *iter;
 			if (currentMessage.length() > 0)
 			{
+				// Used at multiple points in this function; Separate out in subfunction.
+				// Shouls I make a file for Server::incoming_data?
+				if (id_is_empty_message(currentMessage))
+					continue ;
 				if (currentMessage[currentMessage.length() - 1] == '\r')
 					currentMessage = currentMessage.substr(0, currentMessage.length() - 1);
 				std::cout << "Received message from client #" << clientfd << ": [" << currentMessage << "]" << std::endl;
@@ -214,7 +229,7 @@ int	Server::incoming_data(size_t idx)
 		{
 			std::string finalMessage = client->get_messageBuffer() + messages.back();
 
-			if(finalMessage.length() > 0)
+			if(finalMessage.length() > 0 && !id_is_empty_message(finalMessage))
 			{
 				finalMessage = finalMessage.substr(0, finalMessage.length() - 1);
 				std::cout << "Received final message from client #" << _fds[idx].fd << ": [ " << finalMessage << " ]" << std::endl;
@@ -342,7 +357,9 @@ int 	Server::add_channel(std::string channelName, Client &client)
 
 int	    Server::remove_channel(std::string channelName)
 {
-	if (channelName.empty() || !_channelList.at(channelName)->get_clients().empty())
+	std::map<std::string, Channel*>::iterator channelIter = _channelList.find(channelName);
+
+	if (channelIter == _channelList.end())
 		return FAILURE;
 	delete _channelList.at(channelName);
 	_channelList.erase(channelName);

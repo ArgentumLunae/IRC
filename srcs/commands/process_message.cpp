@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/22 17:36:45 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/23 18:05:16 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ int process_message(Client *client, std::string message, Server *server)
 		}
 		case CMD_PRIVMSG:
 		{
-			std::cout << "PRIVMSG COMMAND RECEIVED" << std::endl;
+			private_message(client, tokens, server);
 			break ;
 		}
 		case CMD_JOIN:

@@ -197,7 +197,7 @@ int	Channel::client_in_channel(Client* client)
 
 int	Channel::client_is_operator(Client* client)
 {
-	for (size_t idx= 0; idx < _clients.size(); idx++)
+	for (size_t idx= 0; idx < _operators.size(); idx++)
 	{
 		if (_operators[idx] == client)
 			return idx;
