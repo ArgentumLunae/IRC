@@ -154,7 +154,7 @@ bool	Channel::add_client(Client* client)
 		if (_clients.at(idx) == client)
 		{
 			std::cout << "Client already in channel: " << _clients[idx]->get_nickname() << " at index " << idx << std::endl; // FOR TESTING, REMOVE LATER.
-			return FAILURE;
+			return SUCCESS;
 		}
 	}
 	_clients.push_back(client);
@@ -214,4 +214,14 @@ bool Channel::check_operator_priv(Client *client)
 			return true;
 	}
 	return false;
+}
+
+void	Channel::msg_to_channel(Client *client, std::string msg)
+{
+	for (std::vector<Client*>::iterator iter = _clients.begin(); iter != _clients.end(); iter++)
+	{
+		if (*iter == client)
+			continue ;
+		_server->msg_to_client((*iter)->get_fd(), msg + "\r\n");
+	}
 }

@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/14 18:06:52 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/23 17:20:59 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/27 12:07:39 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,9 @@ static std::string	string_nicknames(std::vector<Client*> clientList, Channel *ch
 		if (iter != clientList.begin())
 			nickList += " ";
 		if (channel->client_is_operator(*iter) < 0)
-			prefix = "@";
-		else
 			prefix = "";
+		else
+			prefix = "@";
 		nickList += prefix + (*iter)->get_nickname();
 	}
 	std::cout << nickList << std::endl;

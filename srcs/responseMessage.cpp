@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 16:56:16 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/23 17:59:03 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/27 17:57:08 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,10 +37,8 @@ static std::map<int, std::string>	map_response_messages()
 	map.insert(std::make_pair(ERR_NOSUCHCHANNEL, " :No such channel"));
 	map.insert(std::make_pair(ERR_NOTONCHANNEL, " :You're not on that channel"));
 	map.insert(std::make_pair(ERR_NOSUCHNICK, " :No such nick/channel"));
-	// map.insert(std::make_pair());
-	// map.insert(std::make_pair());
-	// map.insert(std::make_pair());
-	// map.insert(std::make_pair());
+	map.insert(std::make_pair(ERR_CANNOTSENDTOCHAN, " :Cannot send to channel"));
+	map.insert(std::make_pair(ERR_NOTEXTTOSEND, " :No text to send"));
 	// map.insert(std::make_pair());
 
 	return map;
@@ -51,6 +49,7 @@ void send_response_message(Client *client, int responsecode, std::string specifi
 	static std::map<int, std::string> responses = map_response_messages();
 	std::stringstream msg;
 
+	std::cout << "ERR_CODE: " << responsecode << std::endl;
 	msg << ":" << server->get_config().get_host() << " " << responsecode << " ";
 	if (specifics.empty())
 		msg << responses.at(responsecode) << "\r\n";

@@ -66,6 +66,8 @@ class Channel
 		int		invite(Client* invitee, Client* inviter);
 		int		remove_invite(Client* invitee, Client* inviter);
 		bool	is_invited(std::string nickname);
+
+		void	msg_to_channel(Client *client, std::string msg);
 };
 
 #endif
