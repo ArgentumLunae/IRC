@@ -14,7 +14,6 @@
 #include <sstream>
 #include <sys/socket.h>
 #include "server.hpp"
-#include "client.hpp"
 #include "responsecodes.hpp"
 #include <cstring>
 

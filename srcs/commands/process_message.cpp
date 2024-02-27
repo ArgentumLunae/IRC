@@ -63,6 +63,7 @@ static int isRecognizedCommand(std::string command)
 int process_message(Client *client, std::string message, Server *server)
 {
 	std::vector<std::string> tokens = tokenize_message(message);
+	std::cout << "tokens: " << tokens.size() << std::endl;
 	int	command = isRecognizedCommand(tokens[0]);
 
 	switch (command)

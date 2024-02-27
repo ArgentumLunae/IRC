@@ -39,6 +39,8 @@ class Client
 		std::string	get_username() const;
 		std::string	get_fullname() const;
 		bool		get_correctPassword() const;
+		bool		get_isRegistred() const;
+		bool		get_capabilityNegotiation() const;
 		Server*		get_server() const;
 		std::vector<Channel*> get_channelList(void) const;
 		Channel*	get_channel(std::string channelName);
