@@ -1,6 +1,5 @@
-#include "channel.hpp"
-#include "client.hpp"
 #include "server.hpp"
+#include "process_message.hpp"
 
 #include <algorithm>
 
@@ -124,12 +123,8 @@ int Channel::set_limit(size_t limit, Client* client)
 	return (SUCCESS);
 }
 
-int	Channel::set_topic(std::string topic, Client* client)
+int	Channel::set_topic(std::string topic)
 {
-	if (client == nullptr)
-		return (FAILURE);
-	if (check_operator_priv(client) == false)
-		return (FAILURE);
 	_topic = topic;
 	return (SUCCESS);
 }
@@ -138,11 +133,8 @@ int	Channel::set_topic(std::string topic, Client* client)
 
 bool	Channel::add_client(Client* client)
 {
-	std::cout << "Channel::add_client()" << std::endl;
 	if (client == nullptr)
 		return FAILURE;
-	std::vector<Client*> list = _clients;
-	std::cout << "Client to add: " << client->get_nickname() << std::endl;
 	if (_clients.empty())
 	{
 		_clients.push_back(client);
@@ -159,29 +151,47 @@ bool	Channel::add_client(Client* client)
 	}
 	_clients.push_back(client);
 	client->add_channel(this);
+	if (_operators.empty())
+		_operators.push_back(client);
+	else
+		std::cout << "FIRST OPERATOR: " << _operators[0]->get_nickname() << std::endl;
+	msg_to_channel(client, ":" + client->get_nickname() + "!" + client->get_username() + "@" + _server->get_config().get_host() + " JOIN :" + _name);
 	return SUCCESS;
+}
+
+int	Channel::client_rejoin(Client* client)
+{
+	if (client == nullptr)
+		return FAILURE;
+	for (std::vector<Client*>::iterator iter = _partedClients.begin(); iter < _partedClients.end(); iter++)
+	{
+		if (*iter != client)
+			continue ;
+		join_command(client, std::vector<std::string>{"part", _name, _password}, _server);
+		_partedClients.erase(iter);
+		std::cout << "Client #" << client->get_fd() << " has rejoined " << _name << std::endl;
+		return SUCCESS;
+	}
+	return FAILURE;
 }
 
 bool	Channel::remove_client(Client* client)
 {
 	int clientPos;
 
-	std::cout << "Channel::remove_client()" << std::endl;
 	if(client == nullptr)
 		return FAILURE;
 	clientPos = client_in_channel(client);
-	std::cout << "Client on list position: " << clientPos << std::endl;
 	if (clientPos >= 0)
+	{
 		_clients.erase(_clients.begin() + clientPos);
+		_partedClients.push_back(client);
+	}
 	clientPos = client_is_operator(client);
-	std::cout << "Operator on list position: " << clientPos << std::endl;
 	if (clientPos >= 0)
 		_operators.erase(_operators.begin() + clientPos);
-	if (_clients.empty())
-	{
-		std::cout << "Serer::remove_channel()" << std::endl;
-		_server->remove_channel(_name);
-	}
+	if (_operators.empty() && !_clients.empty())
+		_operators.push_back(_clients[0]); //employ make operator command
 	return SUCCESS;
 }
 
@@ -190,6 +200,16 @@ int	Channel::client_in_channel(Client* client)
 	for (size_t idx= 0; idx < _clients.size(); idx++)
 	{
 		if (_clients[idx] == client)
+			return idx;
+	}
+	return -1;
+}
+
+int	Channel::client_was_in_channel(Client* client)
+{
+	for (size_t idx= 0; idx < _partedClients.size(); idx++)
+	{
+		if (_partedClients[idx] == client)
 			return idx;
 	}
 	return -1;
@@ -222,6 +242,6 @@ void	Channel::msg_to_channel(Client *client, std::string msg)
 	{
 		if (*iter == client)
 			continue ;
-		_server->msg_to_client((*iter)->get_fd(), msg + "\r\n");
+		_server->msg_to_client((*iter)->get_fd(), msg);
 	}
 }

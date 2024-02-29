@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/30 16:54:13 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/08 16:30:24 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/29 15:00:11 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ void capabilities(Client *client, std::vector<std::string> tokens, Server *serve
 	if (tokens[1] == "LS")
 	{
 		client->set_capabilityNegotiation(true);
-		server->msg_to_client(client->get_fd(), "CAP * LS :\r\n");
+		server->msg_to_client(client->get_fd(), "CAP * LS :");
 	}
 	else if (tokens[1] == "END")
 	{

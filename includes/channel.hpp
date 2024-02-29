@@ -19,6 +19,7 @@ class Channel
 		Server*		_server;
 		Client*		_owner;
 		std::vector<Client*>	_clients;
+		std::vector<Client*>	_partedClients;
 		std::vector<Client*>	_operators;
 		std::vector<Client*>	_invitelist;
 		size_t		_userlimit;
@@ -40,6 +41,7 @@ class Channel
 		bool					get_invite() const;
 		Server*					get_server() const;
 		std::vector<Client*>	get_clients() const;
+		std::vector<Client*>	get_partedClients() const;
 		std::vector<Client*>	get_operators() const;
 		Client*					get_owner() const;
 		size_t	                get_userlimit() const;
@@ -49,13 +51,15 @@ class Channel
 		int		set_password(std::string password, Client* client);
 		int		set_limit(size_t limit, Client* client);
 		int		set_topic_operator(Client* client);
-		int		set_topic(std::string topic, Client* client);
+		int		set_topic(std::string topic);
 
 
         //Others (Channel commands)
 		bool	add_client(Client* client);
+		int		client_rejoin(Client *client);
 		bool	remove_client(Client* client);
 		int		client_in_channel(Client* client);
+		int		client_was_in_channel(Client* client);
 		int		client_is_operator(Client* client);
 
 		//Others (User actions)

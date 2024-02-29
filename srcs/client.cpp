@@ -139,6 +139,7 @@ int			Client::add_channel(Channel *channel)
 		std::cout << _channelList.front()->get_name() << std::endl;
 		return SUCCESS;
 	}
+	std::cout << "Client already in channel" << std::endl;
 	return FAILURE;
 }
 

@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/06 14:33:26 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/23 15:30:49 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/29 15:01:52 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,18 +37,18 @@ void	register_nickname(Client *client, std::vector<std::string> tokens, Server *
 	if (tokens[1] == client->get_nickname())
 		return ;
 	if (tokens[1].length() > 9)
-		server->msg_to_client(client->get_fd(), "NICK :Nickname too long, maximum of 9 characters.\r\n");
+		server->msg_to_client(client->get_fd(), "NICK :Nickname too long, maximum of 9 characters.");
 	else if (!validate_nick_syntax(tokens[1]))
 	{
 		send_response_message(client, ERR_ERRONEUSENICKNAME, tokens[1], server);
-		server->msg_to_client(client->get_fd(), ":Nickname may only include a-z, A-Z, 0-9, !, -, and _.\r\n");
+		server->msg_to_client(client->get_fd(), ":Nickname may only include a-z, A-Z, 0-9, !, -, and _.");
 	}
 	else if (server->nickname_in_use(tokens[1]))
 		send_response_message(client, ERR_NICKNAMEINUSE, tokens[1], server);
 	else
 	{
 		if (client->is_registered())
-			server->msg_to_client(client->get_fd(), ":" + client->get_nickname() + " NICK :" + tokens[1] + "\r\n");
+			server->msg_to_client(client->get_fd(), ":" + client->get_nickname() + " NICK :" + tokens[1]);
 		client->set_nickname(tokens[1]);
 	}
 }

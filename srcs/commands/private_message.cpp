@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/13 13:01:29 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/27 18:25:59 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/29 16:16:12 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ static void	message_to_channel(Client *client, std::string channelName, std::str
 		return ;
 	}
 	recipiants = destination->get_clients();
-	if (!client->is_in_channel(channelName))
+	if (!client->is_in_channel(channelName) && destination->client_rejoin(client) != SUCCESS)
 	{
 		send_response_message(client, ERR_CANNOTSENDTOCHAN, ":" + channelName, server);
 		return ;
@@ -60,7 +60,6 @@ void	private_message(Client *client, std::vector<std::string> tokens, Server *se
 			message += tokens[i] + " ";
 		message += tokens[tokens.size() - 1];
 	}
-	std::cout << "MESSAGE " << message << std::endl;
 
 	for (std::vector<std::string>::iterator iter = destinations.begin(); iter != destinations.end(); iter++)
 	{
@@ -71,7 +70,7 @@ void	private_message(Client *client, std::vector<std::string> tokens, Server *se
 			Client *recipiant = server->get_client(*iter);
 
 			if (recipiant != nullptr)
-				server->msg_to_client(recipiant->get_fd(), ":" + client->get_nickname() + " PRIVMSG " + recipiant->get_nickname() + " " + message + "\r\n");
+				server->msg_to_client(recipiant->get_fd(), ":" + client->get_nickname() + " PRIVMSG " + recipiant->get_nickname() + " " + message);
 			else
 				send_response_message(client, ERR_NOSUCHNICK, ":" + *iter, server);
 		}

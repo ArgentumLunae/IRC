@@ -45,7 +45,6 @@ class Client
 		std::vector<Channel*> get_channelList(void) const;
 		Channel*	get_channel(std::string channelName);
 		std::string	get_messageBuffer() const;
-		bool		get_capabilityNegotiation() const;
 
 		//Setters
 		int			set_nickname(std::string nickname);

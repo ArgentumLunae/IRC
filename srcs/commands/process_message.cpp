@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/23 18:05:16 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/28 13:03:19 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,7 +132,7 @@ int process_message(Client *client, std::string message, Server *server)
 		}
 		case CMD_TOPIC:
 		{
-			std::cout << "TOPIC COMMAND RECEIVED" << std::endl;
+			topic_command(client, tokens, server);
 			break ;
 		}
 		case CMD_PING:

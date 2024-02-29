@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/23 15:03:41 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/29 16:20:37 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,7 +150,7 @@ int	Server::finish_client_registration(Client *client)
 		return FAILURE;
 	}
 	client->set_registered(true);
-	msg_to_client(client->get_fd(), ":" + _config.get_host() + " 001 " + client->get_nickname() + " :Welcome to the server\r\n");
+	msg_to_client(client->get_fd(), ":" + _config.get_host() + " 001 " + client->get_nickname() + " :Welcome to the server");
 	return SUCCESS;
 }
 
@@ -286,14 +286,14 @@ int	Server::outgoing_data(int clientfd)
 	}
 	while (client->has_incoming_messages())
 	{
-		std::string message = client->pop_message();
+		std::string message = client->pop_message() + "\r\n";
 		if (send(clientfd, message.c_str(), message.length(), MSG_NOSIGNAL) < 0)
 		{
 			std::cerr << "send() error: " << strerror(errno) << std::endl;
 			return FAILURE;
 		}
 		else
-			std::cout << "Client #" << client->get_fd() << " receives: \"" << message << "\"" << std::endl;
+			std::cout << "Client #" << client->get_fd() << " receives: \"" << message.substr(0, message.length() - 1) << "\"" << std::endl;
 	}
 	return SUCCESS;
 }

@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/14 18:06:52 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/27 12:07:39 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/02/29 15:02:24 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,10 +55,10 @@ void list_names(Client *client, std::vector<std::string> tokens, Server *server)
 			std::vector<Client*> clientList = currentChannel->get_clients();
 
 			sstream << ":" << server->get_config().get_host() << " " << RPL_NAMREPLY << " " << client->get_nickname() << " @ " << *iter << " :";
-			server->msg_to_client(client->get_fd(),  sstream.str() + string_nicknames(currentChannel->get_clients(), currentChannel) + "\r\n");
+			server->msg_to_client(client->get_fd(),  sstream.str() + string_nicknames(currentChannel->get_clients(), currentChannel));
 		}
 		sstream.str("");
-		sstream << ":" << server->get_config().get_host() + " " << RPL_ENDOFNAMES << " " << client->get_nickname() << " " << *iter << " :\r\n";
+		sstream << ":" << server->get_config().get_host() + " " << RPL_ENDOFNAMES << " " << client->get_nickname() << " " << *iter;
 		std::cout << sstream.str() << std::endl;
 		server->msg_to_client(client->get_fd(), sstream.str());
 	}
