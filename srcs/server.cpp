@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/29 16:20:37 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/01 16:51:10 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ int		Server::init_server()
 void	Server::run_server()
 {
 	bool endserver = false;
-	int  timeout = 10 * 60 * 1000;         // Does this need to be part of configuration?
+	int  timeout = 2 * 60 * 1000;         // Does this need to be part of configuration?
 
 	while (endserver == false)
 	{
@@ -293,7 +293,7 @@ int	Server::outgoing_data(int clientfd)
 			return FAILURE;
 		}
 		else
-			std::cout << "Client #" << client->get_fd() << " receives: \"" << message.substr(0, message.length() - 1) << "\"" << std::endl;
+			std::cout << "Client #" << client->get_fd() << " receives: \"" << message.substr(0, message.length() - 2) << "\"" << std::endl;
 	}
 	return SUCCESS;
 }
@@ -313,17 +313,12 @@ int 	Server::add_client(int fd)
 		return (-1);	// look into using specific defines for this.
 	Client *client = new Client(fd, this);
 	_clientList.insert(std::make_pair(fd, client));
-	std::cout << "Client added to server client list" << std::endl;
 	return SUCCESS;
 }
 
 int	    Server::remove_client(int fd)
 {
 	// THIS NEEDS TO:
-	//disconnect client from all connected channels
-	//associated client lists
-	//double check if required to be removed from operator lists
-	std::cout << "Server::remove_client()" << std::endl;
 	Client *client = get_client(fd);
 	if (client == nullptr)
 		return (-1);
@@ -331,6 +326,16 @@ int	    Server::remove_client(int fd)
 	delete client;
 	_clientList.erase(fd);
 	return SUCCESS;	
+}
+
+void	Server::remove_all_clients()
+{
+	for (std::map<int, Client*>::iterator iter = _clientList.begin(); iter != _clientList.end(); iter++)
+	{
+		remove_client(iter->first);
+		if (_clientList.empty())
+			break ;
+	}
 }
 
 bool	Server::nickname_in_use(std::string nickname)
@@ -366,13 +371,17 @@ int	    Server::remove_channel(std::string channelName)
 	return SUCCESS;
 }
 
-void	Server::increment_nfds() {
-	_nfds++;
+void		Server::remove_all_channels()
+{
+	for (std::map<std::string, Channel*>::iterator iter = _channelList.begin(); iter != _channelList.end(); iter++)
+	{
+		delete iter->second;
+		_channelList.erase(iter->first);
+		if (_channelList.empty())
+			break ;
+	}
 }
 
-void	Server::decrement_nfds() {
-	_nfds--;
-}
 
 /* -------- CONSTRUCTORS & DESTRUCTOR -------- */
 Server::Server(std::string setpass, int setport)
@@ -384,6 +393,8 @@ Server::Server(std::string setpass, int setport)
 
 Server::~Server()
 {
+	remove_all_clients();
+	remove_all_channels();
 	return ;
 }
 

@@ -25,7 +25,6 @@ class Server
 		std::map<std::string, Channel*>	_channelList;
 
 		std::vector<pollfd>	_fds;	// Socket file descriptors currently in use
-		int					_nfds;	// Number of socket file descriptors currently in use
 		int					_serverSocket;
 		struct sockaddr_in	_serverAddr;
 
@@ -63,9 +62,11 @@ class Server
         //Others
 		int 	add_client(int fd);
 		int	    remove_client(int fd);
+		void	remove_all_clients(void);
 		bool	nickname_in_use(std::string nickname);
 		int 	add_channel(std::string channelName, Client &client);
 		int	    remove_channel(std::string channelName);
+		void	remove_all_channels(void);
 		int		start_server();
 		int		msg_to_client(int clientfd, std::string msg);
 		int		finish_client_registration(Client *client);

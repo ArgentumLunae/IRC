@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/20 14:53:58 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/29 18:06:02 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/01 16:50:37 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "responseMessage.hpp"
 #include "responsecodes.hpp"
 #include "utils.h"
+#include "process_message.hpp"
 
 static std::string	construct_part_message(std::vector<std::string> & tokens)
 {

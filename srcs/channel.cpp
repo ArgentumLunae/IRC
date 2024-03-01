@@ -80,6 +80,11 @@ std::vector<Client*>	Channel::get_clients() const
 	return (_clients);
 }
 
+std::vector<Client*>	Channel::get_partedClients() const
+{
+	return (_partedClients);
+}
+
 std::vector<Client*>	Channel::get_operators() const
 {
 	return (_operators);
@@ -187,13 +192,26 @@ bool	Channel::remove_client(Client* client)
 		_clients.erase(_clients.begin() + clientPos);
 		_partedClients.push_back(client);
 	}
+	return SUCCESS;
+}
+
+int	Channel::remove_operator(Client* client)
+{
+	int clientPos;
+
+	if(client == nullptr)
+		return FAILURE;
 	clientPos = client_is_operator(client);
 	if (clientPos >= 0)
 		_operators.erase(_operators.begin() + clientPos);
 	if (_operators.empty() && !_clients.empty())
-		_operators.push_back(_clients[0]); //employ make operator command
+	{
+		_operators.push_back(_clients.front()); //employ make operator command
+		_server->msg_to_client(_clients.front()->get_fd(), ":" + _server->get_config().get_host() + " 381 " + _name + ":You're now a channel operator.");
+	}
 	return SUCCESS;
 }
+
 
 int	Channel::client_in_channel(Client* client)
 {

@@ -157,6 +157,8 @@ int			Client::leave_channel(Channel *channel)
 		{
 			channel->remove_client(this);
 			_channelList.erase(iter);
+			if ((*iter)->get_clients().empty()  && (*iter)->get_partedClients().empty())
+				_server->remove_channel((*iter)->get_name());
 			return SUCCESS;
 		}
 	}
@@ -170,7 +172,10 @@ void			Client::leave_all_channels(void)
 	for (std::vector<Channel*>::iterator iter = _channelList.begin(); iter != _channelList.end(); iter++)
 	{
 			(*iter)->remove_client(this);
+			(*iter)->remove_operator(this);
 			_channelList.erase(iter);
+			if ((*iter)->get_clients().empty()  && (*iter)->get_partedClients().empty())
+				_server->remove_channel((*iter)->get_name());
 			if (_channelList.empty())
 				break ;
 	}

@@ -58,6 +58,7 @@ class Channel
 		bool	add_client(Client* client);
 		int		client_rejoin(Client *client);
 		bool	remove_client(Client* client);
+		int		remove_operator(Client* client);
 		int		client_in_channel(Client* client);
 		int		client_was_in_channel(Client* client);
 		int		client_is_operator(Client* client);
