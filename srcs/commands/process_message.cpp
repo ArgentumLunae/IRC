@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/02 15:22:12 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/02 18:55:48 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,85 +76,86 @@ int process_message(Client *client, std::string message, Server *server)
 		case CMD_PASS:
 		{
 			validate_password(client, tokens, server);
+			server->finish_client_registration(client);
 			break ;
 		}
 		case CMD_NICK:
 		{
 			register_nickname(client, tokens, server);
+			server->finish_client_registration(client);
 			break ;
 		}
 		case CMD_USER:
 		{
 			register_username(client, tokens, server);
-			if (server->finish_client_registration(client) == FAILURE)
-				return FAILURE;
+			server->finish_client_registration(client);
 			break ;
 		}
-		case CMD_WHOIS:
+	}
+	if (client->is_registered())
+	{
+		switch (command)
 		{
-			std::cout << "WHOIS COMMAND RECEIVED" << std::endl;
-			break ;
-		}
-		case CMD_NAMES:
-		{
-			list_names(client, tokens, server);
-			break ;
-		}
-		case CMD_PRIVMSG:
-		{
-			private_message(client, tokens, server);
-			break ;
-		}
-		case CMD_JOIN:
-		{
-			join_command(client, tokens, server);
-			break ;
-		}
-		case CMD_PART:
-		{
-			part_command(client, tokens, server);
-			break ;
-		}
-		case CMD_KICK:
-		{
-			std::cout << "KICK COMMAND RECEIVED" << std::endl;
-			break ;
-		}
-		case CMD_MODE:
-		{
-			std::cout << "MODE COMMAND RECEIVED" << std::endl;
-			break ;
-		}
-		case CMD_INVITE:
-		{
-			std::cout << "INVITE COMMAND RECEIVED" << std::endl;
-			break ;
-		}
-		case CMD_TOPIC:
-		{
-			topic_command(client, tokens, server);
-			break ;
-		}
-		case CMD_PING:
-		{
-			std::cout << "PING COMMAND RECEIVED" << std::endl;
-			break ;
-		}
-		case CMD_PONG:
-		{
-			std::cout << "PONG COMMAND RECEIVED" << std::endl;
-			break ;
-		}
-		case CMD_QUIT:
-		{
-			quit_command(client, tokens, server);
-			break ;
-		}
-		default:
-		{
-			std::cout << "message reflected to client." << std::endl;
-			server->msg_to_client(client->get_fd(), ":" + client->get_nickname() + message);
-			break ;
+			case CMD_WHOIS:
+			{
+				std::cout << "WHOIS COMMAND RECEIVED" << std::endl;
+				break ;
+			}
+			case CMD_NAMES:
+			{
+				list_names(client, tokens, server);
+				break ;
+			}
+			case CMD_PRIVMSG:
+			{
+				private_message(client, tokens, server);
+				break ;
+			}
+			case CMD_JOIN:
+			{
+				join_command(client, tokens, server);
+				break ;
+			}
+			case CMD_PART:
+			{
+				part_command(client, tokens, server);
+				break ;
+			}
+			case CMD_KICK:
+			{
+				std::cout << "KICK COMMAND RECEIVED" << std::endl;
+				break ;
+			}
+			case CMD_MODE:
+			{
+				std::cout << "MODE COMMAND RECEIVED" << std::endl;
+				break ;
+			}
+			case CMD_INVITE:
+			{
+				std::cout << "INVITE COMMAND RECEIVED" << std::endl;
+				break ;
+			}
+			case CMD_TOPIC:
+			{
+				topic_command(client, tokens, server);
+				break ;
+			}
+			case CMD_PING:
+			{
+				std::cout << "PING COMMAND RECEIVED" << std::endl;
+				break ;
+			}
+			case CMD_PONG:
+			{
+				std::cout << "PONG COMMAND RECEIVED" << std::endl;
+				break ;
+			}
+			case CMD_QUIT:
+			{
+				quit_command(client, tokens, server);
+				break ;
+			}
 		}
 	}
 	return SUCCESS;

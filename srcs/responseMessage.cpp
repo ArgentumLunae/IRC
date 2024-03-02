@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 16:56:16 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/29 14:59:08 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/02 18:51:52 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@ static std::map<int, std::string>	map_response_messages()
 
 	map.insert(std::make_pair(ERR_NEEDMOREPARAMS, " :Not enough parameters"));
 	map.insert(std::make_pair(ERR_ALREADYREGISTRED, " :You may not reregister"));
+
+	map.insert(std::make_pair(ERR_PASSWDMISMATCH, " :Password incorrect"));
 
 	map.insert(std::make_pair(ERR_NONICKNAMEGIVEN, " :No nickname given"));
 	map.insert(std::make_pair(ERR_ERRONEUSENICKNAME, " :Erroneous nickname"));
@@ -51,7 +53,6 @@ void send_response_message(Client *client, int responsecode, std::string specifi
 	static std::map<int, std::string> responses = map_response_messages();
 	std::stringstream msg;
 
-	std::cout << "ERR_CODE: " << responsecode << std::endl;
 	msg << ":" << server->get_config().get_host() << " " << responsecode << " ";
 	if (specifics.empty())
 		msg << responses.at(responsecode);

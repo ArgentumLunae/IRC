@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/02 17:20:07 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/02 18:26:59 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,6 @@
 #include <errno.h>
 #include <cstring>
 #include <unistd.h>
-#include "client.hpp"
-#include "channel.hpp"
-#include "config.hpp"
 #include "server.hpp"
 #include "utils.h"
 #include "process_message.hpp"
@@ -144,11 +141,7 @@ int	Server::finish_client_registration(Client *client)
 	if (client->get_capabilityNegotiation())
 		return SUCCESS;
 	if (client->get_correctPassword() == false || client->get_nickname().empty() || client->get_username().empty())
-	{
-		std::cout << "Client registration failed." << std::endl;
-		client_disconnect(client->get_fd());
 		return FAILURE;
-	}
 	client->set_registered(true);
 	msg_to_client(client->get_fd(), ":" + _config.get_host() + " 001 " + client->get_nickname() + " :Welcome to the server");
 	return SUCCESS;
@@ -337,7 +330,7 @@ int	    Server::remove_client(int fd)
 
 void	Server::remove_all_clients()
 {
-	for (std::map<int, Client*>::iterator iter = _clientList.begin(); iter != _clientList.end(); iter = _clientlist.begin())
+	for (std::map<int, Client*>::iterator iter = _clientList.begin(); iter != _clientList.end(); iter = _clientList.begin())
 	{
 		remove_client(iter->first);
 		if (_clientList.empty())
@@ -464,5 +457,6 @@ Channel*	Server::get_channel(std::string channelName)
 		return (nullptr);
 	return (channel->second);
 }
+
 /* -------- SETTERS -------- */
 
