@@ -8,6 +8,8 @@ Client::Client(int fd, Server* server) : _server(server)
     _fd = fd;
 	_nickname = "";
 	_username = "";
+	_hostname = "";
+	_hostmask = "";
 	_correctPassword = false;
 	_capabilityNegotiation = false;
 	_registered = false;
@@ -57,6 +59,14 @@ std::string	Client::get_username() const {
 	return (_username);
 }
 
+std::string Client::get_hostname() const {
+	return _hostname;
+}
+
+std::string Client::get_hostmask() const {
+	return _hostmask;
+}
+
 bool		Client::get_correctPassword() const {
 	return (_correctPassword);
 }
@@ -90,23 +100,22 @@ bool	Client::get_capabilityNegotiation(void) const {
 
 //SETTERS
 
-int	Client::set_nickname(std::string nickname)
+int	Client::set_nickname(std::string const nickname)
 {
-	//!!!!ADD CHECKS FOR IF NICKNAME IS ACTUALLY VALID BEFORE ANY OF THIS OTHER STUFF!!!!
-	// Checks have been added in the NICK command code; see nickname.cpp
-	
 	_nickname = nickname;
-	//SET THE FULLNAME HERE
 	return (SUCCESS);
 }
 
-int	Client::set_username(std::string username)
+int	Client::set_username(std::string const username)
 {
-    //!!!!ADD CHECKS FOR IF USERNAME IS ACTUALLY VALID BEFORE ANY OF THIS OTHER STUFF!!!!
-
 	_username = username;
-	//SET THE FULLNAME HERE
+	_hostmask = _username + "@" + _hostname;
 	return (true);
+}
+
+void Client::set_hostname(std::string const hostname) {
+	_hostname = hostname;
+	_hostmask = _username + "@" + _hostname;
 }
 
 int	Client::set_correctPassword(std::string password)
@@ -168,8 +177,7 @@ int			Client::leave_channel(Channel *channel)
 void			Client::leave_all_channels(void)
 {
 	std::cout << "Client::leave_all_channels()" << std::endl;
-	// std::cout << _channelList.front()->get_name() << std::endl;
-	for (std::vector<Channel*>::iterator iter = _channelList.begin(); iter != _channelList.end(); iter++)
+	for (std::vector<Channel*>::iterator iter = _channelList.begin(); iter != _channelList.end(); iter = _channelList.begin())
 	{
 			(*iter)->remove_client(this);
 			(*iter)->remove_operator(this);

@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/01 16:51:10 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/02 17:20:07 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -275,6 +275,12 @@ int	Server::msg_to_client(int clientfd, std::string msg)
 	return SUCCESS;
 }
 
+void	Server::broadcast(std::string msg)
+{
+	for (std::map<int, Client*>::iterator iter = _clientList.begin(); iter != _clientList.end(); iter++)
+		msg_to_client(iter->first, msg);
+}
+
 int	Server::outgoing_data(int clientfd)
 {
 	Client *client = get_client(clientfd);
@@ -309,6 +315,7 @@ int		Server::start_server()
 
 int 	Server::add_client(int fd)
 {
+	std::cout << "|" << fd << "|" << std::endl;
 	if (get_client(fd) != nullptr)
 		return (-1);	// look into using specific defines for this.
 	Client *client = new Client(fd, this);
@@ -330,7 +337,7 @@ int	    Server::remove_client(int fd)
 
 void	Server::remove_all_clients()
 {
-	for (std::map<int, Client*>::iterator iter = _clientList.begin(); iter != _clientList.end(); iter++)
+	for (std::map<int, Client*>::iterator iter = _clientList.begin(); iter != _clientList.end(); iter = _clientlist.begin())
 	{
 		remove_client(iter->first);
 		if (_clientList.empty())
@@ -373,7 +380,7 @@ int	    Server::remove_channel(std::string channelName)
 
 void		Server::remove_all_channels()
 {
-	for (std::map<std::string, Channel*>::iterator iter = _channelList.begin(); iter != _channelList.end(); iter++)
+	for (std::map<std::string, Channel*>::iterator iter = _channelList.begin(); iter != _channelList.end(); iter = _channelList.begin())
 	{
 		delete iter->second;
 		_channelList.erase(iter->first);

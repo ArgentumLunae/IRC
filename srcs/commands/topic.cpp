@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/28 12:20:11 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/29 14:59:22 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/02 16:12:53 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ static void	change_topic(Client *client, Channel *channel, std::string newTopic,
 	if (channel->client_is_operator(client) < 0)
 		return send_response_message(client, ERR_CHANOPRIVSNEEDED, channel->get_name(), server);
 	channel->set_topic(newTopic);
-	reply = ":" + client->get_nickname() + "!" + client->get_username() + "@" + server->get_config().get_host() + " TOPIC " + channel->get_name() + " " + newTopic;
+	reply = ":" + client->get_nickname() + "!" + client->get_hostmask() + " TOPIC " + channel->get_name() + " " + newTopic;
 	server->msg_to_client(client->get_fd(), reply);
 	channel->msg_to_channel(client, reply);
 }

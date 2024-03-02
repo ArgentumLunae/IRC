@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/28 13:03:19 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/02 15:22:12 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,12 +147,12 @@ int process_message(Client *client, std::string message, Server *server)
 		}
 		case CMD_QUIT:
 		{
-			std::cout << "QUIT COMMAND RECEIVED" << std::endl;
+			quit_command(client, tokens, server);
 			break ;
 		}
 		default:
 		{
-			std::cout << "message sent to client." << std::endl;
+			std::cout << "message reflected to client." << std::endl;
 			server->msg_to_client(client->get_fd(), ":" + client->get_nickname() + message);
 			break ;
 		}

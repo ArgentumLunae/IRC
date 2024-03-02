@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 16:22:21 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/15 15:47:47 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/02 15:53:20 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,5 +22,8 @@ void register_username(Client *client, std::vector<std::string> tokens, Server *
 	if (client->is_registered())
 		send_response_message(client, ERR_ALREADYREGISTRED, "", server);
 	else
+	{
 		client->set_username(tokens[1]);
+		client->set_hostname(tokens[2]);
+	}
 }

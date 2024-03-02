@@ -33,7 +33,6 @@ class Server
 		void	run_server();
 		void	check_revents();
 		int		client_connect();
-		void	client_disconnect(int clientfd);
 		int		incoming_data(size_t idx);
 		int		outgoing_data(int clientfd);
 		void	closeServer();
@@ -69,7 +68,9 @@ class Server
 		void	remove_all_channels(void);
 		int		start_server();
 		int		msg_to_client(int clientfd, std::string msg);
+		void	broadcast(std::string msg);
 		int		finish_client_registration(Client *client);
+		void	client_disconnect(int clientfd);
 };
 
 #endif

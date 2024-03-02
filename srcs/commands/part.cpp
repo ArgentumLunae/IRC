@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/20 14:53:58 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/01 16:50:37 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/02 16:11:12 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ void	part_command(Client *client, std::vector<std::string> tokens, Server *serve
 	channelNames = split(tokens[1], ',');
 	if (tokens.size() > 2)
 		partMessage = construct_part_message(tokens);
-	partPrefix = ":" + client->get_nickname() + "!" + client->get_username() + "@" + server->get_config().get_host();
+	partPrefix = ":" + client->get_nickname() + "!" + client->get_hostmask();
 	for (size_t i = 0; i < channelNames.size(); i++)
 	{
 		std::map<std::string, Channel*>::iterator currentChannel;

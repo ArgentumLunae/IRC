@@ -16,10 +16,12 @@ class Client
 		int			_fd;
 		std::string	_nickname;
 		std::string	_username;
+		std::string _hostname;
+		std::string	_hostmask;
 		std::string	_fullname;
 		bool		_correctPassword;
 		bool		_capabilityNegotiation;
-		bool		_registered; 
+		bool		_registered;
 		Server		*_server;
 		std::vector<Channel *> _channelList;
 
@@ -37,6 +39,8 @@ class Client
 		int			get_fd() const;
 		std::string	get_nickname() const;
 		std::string	get_username() const;
+		std::string get_hostname() const;
+		std::string get_hostmask() const;
 		std::string	get_fullname() const;
 		bool		get_correctPassword() const;
 		bool		get_isRegistred() const;
@@ -47,8 +51,10 @@ class Client
 		std::string	get_messageBuffer() const;
 
 		//Setters
-		int			set_nickname(std::string nickname);
-		int			set_username(std::string username);
+		int			set_nickname(std::string const nickname);
+		int			set_username(std::string const username);
+		void		set_hostname(std::string const hostname);
+		void		set_hostmask(std::string const hostmask);
 		int			set_correctPassword(std::string password);
 		void		set_capabilityNegotiation(bool state);
 		void		set_registered(bool const state);
