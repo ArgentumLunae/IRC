@@ -9,13 +9,20 @@
 class Server;
 class Client;
 
+enum modes {
+	MODE_INV = 1,
+	MODE_TOP = 2,
+	MODE_KEY = 4,
+	MODE_LIM = 8
+};
+
 class Channel
 {
 	private:
 		std::string	_name;
 		std::string	_topic;
+		uint8_t		_modes;
 		std::string	_password;
-		bool		_invite;
 		Server*		_server;
 		Client*		_owner;
 		std::vector<Client*>	_clients;
@@ -36,9 +43,9 @@ class Channel
 		//Getters
 		std::string				get_name() const;
 		std::string				get_topic() const;
-		bool					get_topic_operator() const;
+		// bool					get_topic_operator() const;
 		std::string				get_password() const;
-		bool					get_invite() const;
+		uint8_t					get_modes() const;
 		Server*					get_server() const;
 		std::vector<Client*>	get_clients() const;
 		std::vector<Client*>	get_partedClients() const;
@@ -48,6 +55,7 @@ class Channel
 
         //Setters
 		int		set_invite(Client* client);
+		int		set_modes(uint8_t newmodes);
 		int		set_password(std::string password, Client* client);
 		int		set_limit(size_t limit, Client* client);
 		int		set_topic_operator(Client* client);

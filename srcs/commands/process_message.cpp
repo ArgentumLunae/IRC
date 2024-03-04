@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/02 18:55:48 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/04 17:45:13 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@ enum e_commands
 	CMD_PASS,
 	CMD_NICK,
 	CMD_USER,
-	CMD_WHOIS,
 	CMD_NAMES,
 	CMD_PRIVMSG,
 	CMD_JOIN,
@@ -49,7 +48,7 @@ static std::vector<std::string>	tokenize_message(std::string message)
 
 static int isRecognizedCommand(std::string command)
 {
-	static std::vector<std::string> commandList{"CAP", "PASS", "NICK", "USER", "WHOIS", "NAMES", "PRIVMSG", "JOIN", "PART", "KICK", "MODE", "INVITE", "TOPIC", "PING", "PONG", "QUIT"};
+	static std::vector<std::string> commandList{"CAP", "PASS", "NICK", "USER", "NAMES", "PRIVMSG", "JOIN", "PART", "KICK", "MODE", "INVITE", "TOPIC", "PING", "PONG", "QUIT"};
 	size_t idx = 0;
 	
 	for (std::vector<std::string>::iterator iter = commandList.begin(); (iter + idx) != commandList.end(); idx++)
@@ -63,7 +62,6 @@ static int isRecognizedCommand(std::string command)
 int process_message(Client *client, std::string message, Server *server)
 {
 	std::vector<std::string> tokens = tokenize_message(message);
-	std::cout << "tokens: " << tokens.size() << std::endl;
 	int	command = isRecognizedCommand(tokens[0]);
 
 	switch (command)
@@ -96,11 +94,6 @@ int process_message(Client *client, std::string message, Server *server)
 	{
 		switch (command)
 		{
-			case CMD_WHOIS:
-			{
-				std::cout << "WHOIS COMMAND RECEIVED" << std::endl;
-				break ;
-			}
 			case CMD_NAMES:
 			{
 				list_names(client, tokens, server);
@@ -156,6 +149,8 @@ int process_message(Client *client, std::string message, Server *server)
 				quit_command(client, tokens, server);
 				break ;
 			}
+			default:
+				return FAILURE;
 		}
 	}
 	return SUCCESS;

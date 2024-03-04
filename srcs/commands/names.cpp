@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/14 18:06:52 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/29 15:02:24 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/04 17:48:32 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,12 +43,10 @@ void list_names(Client *client, std::vector<std::string> tokens, Server *server)
 
 	if (tokens.size() < 2)
 		return ;
-	std::cout << "list_names()" << std::endl;
 	channelList = split(tokens[1], ',');
 	for (std::vector<std::string>::iterator iter = channelList.begin(); iter != channelList.end(); iter++)
 	{
 		std::stringstream sstream;
-		std::cout << "currentChannel == " << *iter << std::endl;
 		currentChannel = server->get_channel(*iter);
 		if (currentChannel != nullptr)
 		{
@@ -59,7 +57,6 @@ void list_names(Client *client, std::vector<std::string> tokens, Server *server)
 		}
 		sstream.str("");
 		sstream << ":" << server->get_config().get_host() + " " << RPL_ENDOFNAMES << " " << client->get_nickname() << " " << *iter;
-		std::cout << sstream.str() << std::endl;
 		server->msg_to_client(client->get_fd(), sstream.str());
 	}
 }

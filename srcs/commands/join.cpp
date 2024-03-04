@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/09 15:37:20 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/29 18:26:54 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/04 18:48:59 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,41 @@
 
 // TODO: finish working on this
 
+static bool	pass_channel_modes(Client *client, Channel *channel, Server *server)
+{
+	if (channel->get_modes() & MODE_LIM && channel->get_clients().size() >= channel->get_userlimit())
+	{
+		send_response_message(client, ERR_CHANNELISFULL, channel->get_name(), server);
+		return false;
+	}
+	if (channel->get_modes() & MODE_INV) //Add a check to see if the client is on the invite list if JOIN is used alongside INVITE
+	{
+		send_response_message(client, ERR_INVITEONLYCHAN, channel->get_name(), server);
+		return false;
+	}
+	return true;
+}
+
+static bool	check_channel_mask(Client *client, std::string channelName, Server *server)
+{
+	if (channelName.size() > 200 || (channelName[0] != '#' && channelName[0] != '&') || channelName.find(' ') != std::string::npos || channelName.find(',')  != std::string::npos)
+	{
+		send_response_message(client, ERR_BADCHANMASK, channelName, server);
+		return false;
+	}
+	return true;
+}
+
+static bool check_channel_key(Client *client, Channel *channel, std::string key, Server *server)
+{
+	if (channel->get_modes() & MODE_KEY && !channel->get_password().empty() && key != channel->get_password())
+	{
+		send_response_message(client, ERR_BADCHANNELKEY, "", server);
+		return false;
+	}
+	return true;
+}
+
 void	join_command(Client *client, std::vector<std::string> tokens, Server *server)
 {
 	std::vector<std::string> channelNames;
@@ -25,6 +60,7 @@ void	join_command(Client *client, std::vector<std::string> tokens, Server *serve
 	Channel	*currentChannel;
 	size_t	idx = 0;
 
+	std::cout << "join_command()" << std::endl;
 	if (tokens.size() < 2)
 	{
 		send_response_message(client, ERR_NEEDMOREPARAMS, "JOIN ", server);
@@ -35,19 +71,16 @@ void	join_command(Client *client, std::vector<std::string> tokens, Server *serve
 		channelKeys = split(tokens[2], ',');
 	for (std::vector<std::string>::iterator iter = channelNames.begin(); iter != channelNames.end(); iter++)
 	{
-		if (!(server->add_channel(*iter, *client) == SUCCESS))
-		{
-			std::cout << "Failed to find or create channel." << std::endl;
+		if (check_channel_mask(client, *iter, server) == false)
+			continue ;
+		if (server->add_channel(*iter, *client) != SUCCESS)
 			return ;
-		}
 		else
 			currentChannel = server->get_channel(*iter);
-		if (idx < channelKeys.size() && !currentChannel->get_password().empty()
-			&& channelKeys.at(idx) != currentChannel->get_password())
-		{
-				send_response_message(client, ERR_BADCHANNELKEY, "", server);
-				return ;
-		}
+		if (pass_channel_modes(client, currentChannel, server) == false)
+			continue ;
+		if (idx < channelKeys.size() && check_channel_key(client, currentChannel, channelKeys[idx], server) == false)
+			continue ;
 		if (!currentChannel->add_client(client))
 		{
 			if (currentChannel->get_topic().empty())
@@ -56,6 +89,6 @@ void	join_command(Client *client, std::vector<std::string> tokens, Server *serve
 				topic_command(client, std::vector<std::string>{"TOPIC", *iter, currentChannel->get_topic()}, server);
 		}
 		idx++;
+		list_names(client, std::vector<std::string>{"NAMES", *iter}, server);
 	}
-	list_names(client, tokens, server);
 }

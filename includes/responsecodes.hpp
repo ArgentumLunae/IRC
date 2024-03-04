@@ -42,6 +42,7 @@ enum errorReplies
 	ERR_INVITEONLYCHAN = 473,		// 
 	ERR_BANNEDFROMCHAN = 474,		// 
 	ERR_BADCHANNELKEY = 475,		// 
+	ERR_BADCHANMASK = 476,			//
 	ERR_NOPRIVILEGES = 481,			// 
 	ERR_CHANOPRIVSNEEDED = 482,		// 
 	ERR_CANTKILLSERVER = 483,		// 
@@ -152,7 +153,6 @@ enum ircReserverNumerics
 	RPL_KILLDONE = 361,				//
 	RPL_CLOSEEND = 363,				//
 	RPL_MYPORTIS = 384,				//
-	RPL_BADCHANMASK = 476,			//
 };
 
 #endif

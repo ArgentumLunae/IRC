@@ -10,7 +10,7 @@ Channel::Channel(std::string name, Client* creator, Server* server) : _server(se
 	_name = name;
 	_topic = "";
 	_password = "";
-	_invite = false;
+	_modes = MODE_TOP + MODE_LIM;
 	_userlimit = server->get_config().get_maxClients();
 	_owner = creator;
 	_clients = std::vector<Client*>{creator};
@@ -33,7 +33,7 @@ Channel &Channel::operator=(const Channel &copy)
 	_name = copy._name;
 	_topic = copy._topic;
 	_password = copy._password;
-	_invite = copy._invite;
+	_modes = copy._modes;
 	_userlimit = copy._userlimit;
 	_clients = copy._clients;
 	_operators = copy._operators;
@@ -60,9 +60,9 @@ std::string	Channel::get_password() const
 	return (_password);
 }
 
-bool Channel::get_invite() const
+uint8_t Channel::get_modes() const
 {
-	return (_invite);
+	return (_modes);
 }
 
 size_t Channel::get_userlimit() const
@@ -97,14 +97,10 @@ Client*	Channel::get_owner() const
 
 ///SETTERS
 
-int	Channel::set_invite(Client* client)
+int	Channel::set_modes(uint8_t newmodes)
 {
-	if (client == nullptr)
-		return (FAILURE);
-	if (check_operator_priv(client) == false)
-		return (FAILURE);
-	_invite = !_invite;
-	return (SUCCESS);
+	_modes = newmodes;
+	return SUCCESS;
 }
 
 //do we need specific password settings/rules that we need to abide by?
@@ -207,7 +203,7 @@ int	Channel::remove_operator(Client* client)
 	if (_operators.empty() && !_clients.empty())
 	{
 		_operators.push_back(_clients.front()); //employ make operator command
-		_server->msg_to_client(_clients.front()->get_fd(), ":" + _server->get_config().get_host() + " 381 " + _name + ":You're now a channel operator.");
+		_server->msg_to_client(_clients.front()->get_fd(), ":" + _server->get_config().get_host() + " 381 " + _name + " :You're now a channel operator.");
 	}
 	return SUCCESS;
 }

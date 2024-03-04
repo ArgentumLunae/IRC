@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/02 18:26:59 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/04 14:55:12 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,6 +113,11 @@ void	Server::check_revents()
 			outgoing_data(_fds[i].fd);
 		if ((_fds[i].revents & POLLHUP) && i > 0)
 			client_disconnect(_fds[i].fd);
+		if ((_fds[i].revents & POLLRDHUP) && i > 0)
+		{
+			std::cout << "POLLRDHUP" << std::endl;
+			client_disconnect(_fds[i].fd);
+		}
 	}
 }
 
@@ -130,7 +135,7 @@ int	Server::client_connect()
 		return FAILURE;
 	}
 	std::cout << "New incoming connection - #" << clientSocket.fd << std::endl;
-	clientSocket.events = POLLIN | POLLOUT;
+	clientSocket.events = POLLIN | POLLOUT | POLLRDHUP;
 	add_client(clientSocket.fd);
 	_fds.push_back(clientSocket);
 	return SUCCESS;
@@ -149,7 +154,7 @@ int	Server::finish_client_registration(Client *client)
 
 void	Server::client_disconnect(int clientfd)
 {
-	remove_client(clientfd); //TODO write out this function
+	remove_client(clientfd);
 	close(clientfd);
 	for (std::vector<pollfd>::iterator iter = _fds.begin(); iter != _fds.end(); ++iter)
 	{
@@ -164,15 +169,6 @@ void	Server::client_disconnect(int clientfd)
 }
 
 // Companion function for incomming_data(), where best to put this?
-static bool	id_is_empty_message(std::string message)
-{
-	if (message[0] == '\r')
-	{
-		std::cout << "received empty message." << std::endl;
-		return true;
-	}
-	return false;
-}
 
 int	Server::incoming_data(size_t idx)
 {
@@ -190,21 +186,13 @@ int	Server::incoming_data(size_t idx)
 		
 		buffer[bytesRecv] = '\0';
 		if (bytesRecv >= 2 && buffer[bytesRecv - 2] == '\r' && buffer[bytesRecv - 1] == '\n')
-		{
 			messageComplete = true;
-			std::cout << "messageComplete == true" << std::endl;
-		}
-		std::cout << "incoming data of " << bytesRecv << " bytes." << std::endl;
 		messages = split(buffer, '\n');
 		for (std::vector<std::string>::iterator iter = messages.begin(); iter != (messages.end() - 1); iter++)
 		{
 			std::string currentMessage = *iter;
-			if (currentMessage.length() > 0)
+			if (currentMessage.length() > 0 && !(currentMessage[0] == '\r'))
 			{
-				// Used at multiple points in this function; Separate out in subfunction.
-				// Shouls I make a file for Server::incoming_data?
-				if (id_is_empty_message(currentMessage))
-					continue ;
 				if (currentMessage[currentMessage.length() - 1] == '\r')
 					currentMessage = currentMessage.substr(0, currentMessage.length() - 1);
 				std::cout << "Received message from client #" << clientfd << ": [" << currentMessage << "]" << std::endl;
@@ -214,7 +202,7 @@ int	Server::incoming_data(size_t idx)
 					client->clear_message_buffer();
 				}
 				if (process_message(get_client(clientfd), currentMessage, client->get_server()) == FAILURE)
-					return FAILURE;
+					continue ;
 				client->clear_message_buffer();
 			}
 		}
@@ -222,7 +210,7 @@ int	Server::incoming_data(size_t idx)
 		{
 			std::string finalMessage = client->get_messageBuffer() + messages.back();
 
-			if(finalMessage.length() > 0 && !id_is_empty_message(finalMessage))
+			if(finalMessage.length() > 0 && finalMessage[0] != '\r')
 			{
 				finalMessage = finalMessage.substr(0, finalMessage.length() - 1);
 				std::cout << "Received final message from client #" << _fds[idx].fd << ": [ " << finalMessage << " ]" << std::endl;
@@ -241,16 +229,6 @@ int	Server::incoming_data(size_t idx)
 			}
 		}
 	}
-	else
-	{
-		std::cout << "Other end of socket is closed." << std::endl;
-		if (!client->has_incoming_messages())
-		{
-			client_disconnect(_fds[idx].fd);
-			return FAILURE;
-		}
-	}
-	std::cout << " " << bytesRecv << " bytes received." << std::endl;
 	return SUCCESS;
 }
 
@@ -424,9 +402,7 @@ std::map<int, Client*> Server::get_clientList()
 	return (_clientList);
 }
 
-//in case the client isn't in the list at all, chuck a nullptr back? probably a better way to do this
-//I use this method for all the others, should ask Michiel at some point if he has a better idea.
-// Michiel: I'm fine with chucking back return values for such things
+
 Client*	Server::get_client(int fd)
 {
 	std::map<int, Client*>::iterator client = _clientList.find(fd);

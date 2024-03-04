@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 16:56:16 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/02 18:51:52 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/04 18:04:16 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,12 @@ static std::map<int, std::string>	map_response_messages()
 	map.insert(std::make_pair(ERR_CANNOTSENDTOCHAN, " :Cannot send to channel"));
 	map.insert(std::make_pair(ERR_NOTEXTTOSEND, " :No text to send"));
 	map.insert(std::make_pair(ERR_CHANOPRIVSNEEDED, " :You're not channel operator"));
+	map.insert(std::make_pair(ERR_CHANNELISFULL, " :Cannot join channel (+l)"));
+	map.insert(std::make_pair(ERR_INVITEONLYCHAN, " :Cannot join channel (+i)"));
+	map.insert(std::make_pair(ERR_BADCHANMASK, " :Bad channel mask"));
+	map.insert(std::make_pair(ERR_BADCHANNELKEY, " :Cannot join channel (+k)"));
 	// map.insert(std::make_pair());
+
 
 
 	return map;
@@ -58,6 +63,5 @@ void send_response_message(Client *client, int responsecode, std::string specifi
 		msg << responses.at(responsecode);
 	else
 		msg << specifics << responses.at(responsecode);
-	std::cout << msg.str() << std::endl;
 	server->msg_to_client(client->get_fd(), msg.str());
 }

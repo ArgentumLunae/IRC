@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/28 12:20:11 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/02 16:12:53 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/04 16:57:24 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ static void	change_topic(Client *client, Channel *channel, std::string newTopic,
 {
 	std::string reply;
 
-	if (channel->client_is_operator(client) < 0)
+	if ((channel->get_modes() & MODE_TOP) || channel->client_is_operator(client) < 0)
 		return send_response_message(client, ERR_CHANOPRIVSNEEDED, channel->get_name(), server);
 	channel->set_topic(newTopic);
 	reply = ":" + client->get_nickname() + "!" + client->get_hostmask() + " TOPIC " + channel->get_name() + " " + newTopic;
@@ -45,7 +45,6 @@ void	topic_command(Client *client, std::vector<std::string> tokens, Server *serv
 {
 	Channel *channel;
 
-	std::cout << "topic_command()\nnr of tokens:\t" << tokens.size() << std::endl;
 	if (tokens.size() < 2)
 		return send_response_message(client, ERR_NEEDMOREPARAMS, "TOPIC", server);
 	channel = client->get_channel(tokens[1]);
