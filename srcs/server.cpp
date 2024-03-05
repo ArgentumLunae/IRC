@@ -1,20 +1,32 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        ::::::::            */
+/*   server.cpp                                         :+:    :+:            */
+/*                                                     +:+                    */
+/*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
+/*                                                   +#+                      */
+/*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
+/*   Updated: 2024/03/05 16:44:10 by mteerlin      ########   odam.nl         */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <iostream>
 #include <fcntl.h>
 #include <errno.h>
 #include <cstring>
 #include <unistd.h>
-#include "client.hpp"
-#include "channel.hpp"
-#include "config.hpp"
 #include "server.hpp"
 #include "utils.h"
 #include "process_message.hpp"
+#include "responseMessage.hpp"
 
 /* -------- MEMBER FUNCTIONS -------- */
 
-int		Server::initServer()
+int		Server::init_server()
 {
 	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	_config.config_from_file("configs/serverconfig.conf");
+	_config.print_config();
 	if (_serverSocket < 0)
 	{
 		std::cerr << "socket() error: " << strerror(errno) << std::endl;
@@ -50,10 +62,10 @@ int		Server::initServer()
 	return SUCCESS;;
 }
 
-void	Server::runServer()
+void	Server::run_server()
 {
 	bool endserver = false;
-	int  timeout = 10 * 60 * 1000;         // Does this need to be part of configuration?
+	int  timeout = 2 * 60 * 1000;         // Does this need to be part of configuration?
 
 	while (endserver == false)
 	{
@@ -70,7 +82,7 @@ void	Server::runServer()
 			std::cerr << "poll() timeout: " << strerror(errno) << std::endl;
 			break ;
 		}
-		checkRevents();
+		check_revents();
 	}
 }
 
@@ -83,7 +95,7 @@ void	Server::closeServer()
 	_fds.erase(_fds.begin(), itend);
 }
 
-void	Server::checkRevents()
+void	Server::check_revents()
 {
 	for (size_t i = 0; i < _fds.size(); i++)
 	{
@@ -91,26 +103,28 @@ void	Server::checkRevents()
 		{
 			if (i == 0)
 			{
-				clientConnect(i);
+				client_connect();
 				continue ;
 			}
-			else if (incomingData(i) == FAILURE)
+			else if (incoming_data(i) == FAILURE)
 				continue ;
 		}
 		if ((_fds[i].revents & POLLOUT) && i > 0)
-			outgoingData(_fds[i].fd);
+			outgoing_data(_fds[i].fd);
 		if ((_fds[i].revents & POLLHUP) && i > 0)
-			clientDisconnect(i);
+			client_disconnect(_fds[i].fd);
+		if ((_fds[i].revents & POLLRDHUP) && i > 0)
+			client_disconnect(_fds[i].fd);
 	}
 }
 
-int	Server::clientConnect(size_t idx)
+int	Server::client_connect()
 {
 	struct sockaddr clientAddr;
 	socklen_t clientAddrLen = sizeof(clientAddr);
 	pollfd clientSocket;
 	
-	clientSocket.fd = accept(_fds[idx].fd, &clientAddr, &clientAddrLen);
+	clientSocket.fd = accept(_serverSocket, &clientAddr, &clientAddrLen);
 
 	if (clientSocket.fd < 0 && errno != EWOULDBLOCK)
 	{
@@ -118,25 +132,45 @@ int	Server::clientConnect(size_t idx)
 		return FAILURE;
 	}
 	std::cout << "New incoming connection - #" << clientSocket.fd << std::endl;
-	clientSocket.events = POLLIN | POLLOUT;
-	_fds.push_back(clientSocket);
+	clientSocket.events = POLLIN | POLLOUT | POLLRDHUP;
 	add_client(clientSocket.fd);
+	_fds.push_back(clientSocket);
 	return SUCCESS;
 }
 
-void	Server::clientDisconnect(size_t idx)
+int	Server::finish_client_registration(Client *client)
 {
-	std::cout << "Client #" << _fds[idx].fd << " has disconnected." << std::endl;
-	remove_client(_fds[idx].fd); //TODO write out this function
-	close(_fds[idx].fd);
-	_fds.erase(_fds.begin() + idx);
+	if (client->get_capabilityNegotiation())
+		return SUCCESS;
+	if (client->get_correctPassword() == false || client->get_nickname().empty() || client->get_username().empty())
+		return FAILURE;
+	client->set_registered(true);
+	msg_to_client(client->get_fd(), ":" + _config.get_host() + " 001 " + client->get_nickname() + " :Welcome to the server");
+	return SUCCESS;
 }
 
-int	Server::incomingData(size_t idx)
+void	Server::client_disconnect(int clientfd)
+{
+	remove_client(clientfd);
+	close(clientfd);
+	for (std::vector<pollfd>::iterator iter = _fds.begin(); iter != _fds.end(); ++iter)
+	{
+		if (iter->fd == clientfd)
+		{
+			_fds.erase(iter);
+			std::cout << "Client #" << clientfd << " has disconnected." << std::endl;
+			return ;
+		}
+	}
+	std::cout << "Client #" << clientfd << " not found." << std::endl;
+}
+
+int	Server::incoming_data(size_t idx)
 {
 	char buffer[512];
-	int bytesRecv = recv(_fds[idx].fd, buffer, sizeof(buffer) - 1, 0);
 	Client *client = get_client(_fds[idx].fd);
+	int clientfd = client->get_fd();
+	int bytesRecv = recv(clientfd, buffer, sizeof(buffer) - 1, 0);
 		
 	if (bytesRecv < 0)
 		std::cerr << "recv() error: " << strerror(errno) << std::endl;
@@ -147,24 +181,23 @@ int	Server::incomingData(size_t idx)
 		
 		buffer[bytesRecv] = '\0';
 		if (bytesRecv >= 2 && buffer[bytesRecv - 2] == '\r' && buffer[bytesRecv - 1] == '\n')
-		{
 			messageComplete = true;
-			std::cout << "messageComplete == true" << std::endl;
-		}
-		std::cout << "incoming data." << std::endl;
-		messages = split(buffer, "\r\n");
+		messages = split(buffer, '\n');
 		for (std::vector<std::string>::iterator iter = messages.begin(); iter != (messages.end() - 1); iter++)
 		{
 			std::string currentMessage = *iter;
-			if (currentMessage.length() > 0)
+			if (currentMessage.length() > 0 && !(currentMessage[0] == '\r'))
 			{
-				std::cout << "Received message from client #" << _fds[idx].fd << ": " << currentMessage << std::endl;
+				if (currentMessage[currentMessage.length() - 1] == '\r')
+					currentMessage = currentMessage.substr(0, currentMessage.length() - 1);
+				std::cout << "Received message from client #" << clientfd << ": [" << currentMessage << "]" << std::endl;
 				if (iter == messages.begin())
 				{
 					currentMessage = client->get_messageBuffer() + currentMessage;
 					client->clear_message_buffer();
 				}
-				process_message(get_client(_fds[idx].fd), currentMessage, client->get_server());
+				if (process_message(get_client(clientfd), currentMessage, client->get_server()) == FAILURE)
+					continue ;
 				client->clear_message_buffer();
 			}
 		}
@@ -172,10 +205,12 @@ int	Server::incomingData(size_t idx)
 		{
 			std::string finalMessage = client->get_messageBuffer() + messages.back();
 
-			if(finalMessage.length() > 0)
+			if(finalMessage.length() > 0 && finalMessage[0] != '\r')
 			{
-				std::cout << "Received final message from client #" << _fds[idx].fd << ": " << finalMessage << std::endl;
-				process_message(get_client(_fds[idx].fd), finalMessage, client->get_server());
+				finalMessage = finalMessage.substr(0, finalMessage.length() - 1);
+				std::cout << "Received final message from client #" << _fds[idx].fd << ": [ " << finalMessage << " ]" << std::endl;
+				process_message(get_client(clientfd), finalMessage, client->get_server());
+				client->clear_message_buffer();
 			}
 		}
 		else 
@@ -184,21 +219,11 @@ int	Server::incomingData(size_t idx)
 
 			if(finalMessage.length() > 0)
 			{
-				std::cout << "Received partial message from client #" << _fds[idx].fd << ": " << finalMessage << std::endl;
+				std::cout << "Received partial message from client #" << _fds[idx].fd << ": [ " << finalMessage << " ]" << std::endl;
 				client->add_to_message_buffer(finalMessage);
 			}
 		}
 	}
-	else
-	{
-		std::cout << "Other end of socket is closed." << std::endl;
-		if (!client->has_incoming_messages())
-		{
-			clientDisconnect(idx);
-			return FAILURE;
-		}
-	}
-	std::cout << " " << bytesRecv << " bytes received." << std::endl;
 	return SUCCESS;
 }
 
@@ -211,69 +236,86 @@ int	Server::msg_to_client(int clientfd, std::string msg)
 		std::cerr << "msg_to_client(): Client #" << clientfd << " not found." << std::endl;
 		return FAILURE;
 	}
+	std::cout << "Message sent to Client: \"" << msg << "\"" << std::endl;
 	client->push_message(msg);
 	return SUCCESS;
 }
 
-int	Server::outgoingData(int clientfd)
+void	Server::broadcast(std::string msg)
+{
+	for (std::map<int, Client*>::iterator iter = _clientList.begin(); iter != _clientList.end(); iter++)
+		msg_to_client(iter->first, msg);
+}
+
+int	Server::outgoing_data(int clientfd)
 {
 	Client *client = get_client(clientfd);
 
 	if (client == nullptr)
 	{
-		std::cerr << "outgoingData(): Client #" << clientfd << " not found." << std::endl;
+		std::cerr << "outgoing_data(): Client #" << clientfd << " not found." << std::endl;
 		return FAILURE;
 	}
 	while (client->has_incoming_messages())
 	{
-		std::string message = client->pop_message();
-		if (send(clientfd, message.c_str(), message.length(), 0) < 0)
+		std::string message = client->pop_message() + "\r\n";
+		if (send(clientfd, message.c_str(), message.length(), MSG_NOSIGNAL) < 0)
 		{
 			std::cerr << "send() error: " << strerror(errno) << std::endl;
 			return FAILURE;
 		}
 		else
-			std::cout << "Client #" << client->get_fd() << " receives: " << message << std::endl;
+			std::cout << "Client #" << client->get_fd() << " receives: \"" << message.substr(0, message.length() - 2) << "\"" << std::endl;
 	}
 	return SUCCESS;
 }
 
 int		Server::start_server()
 {
-	if (this->initServer())
+	if (this->init_server())
 		return FAILURE;
-	runServer();
+	run_server();
 	closeServer();
 	return SUCCESS;
 }
 
 int 	Server::add_client(int fd)
 {
+	std::cout << "|" << fd << "|" << std::endl;
 	if (get_client(fd) != nullptr)
 		return (-1);	// look into using specific defines for this.
-	Client client(fd, this);
+	Client *client = new Client(fd, this);
 	_clientList.insert(std::make_pair(fd, client));
-	std::cout << "Client added to server client list" << std::endl;
 	return SUCCESS;
 }
 
 int	    Server::remove_client(int fd)
 {
 	// THIS NEEDS TO:
-	//disconnect client from all connected channels
-	//associated client lists
-	//double check if required to be removed from operator lists
-	if (get_client(fd) == nullptr)
+	Client *client = get_client(fd);
+	if (client == nullptr)
 		return (-1);
-	_clientList.erase(_clientList.find(fd));
+	client->leave_all_channels();
+	delete client;
+	_clientList.erase(fd);
 	return SUCCESS;	
+}
+
+void	Server::remove_all_clients()
+{
+	for (std::map<int, Client*>::iterator iter = _clientList.begin(); iter != _clientList.end(); iter = _clientList.begin())
+	{
+		remove_client(iter->first);
+		if (_clientList.empty())
+			break ;
+	}
 }
 
 bool	Server::nickname_in_use(std::string nickname)
 {
-	for (std::map<int, Client>::iterator iter = _clientList.begin(); iter != _clientList.end(); iter++)
+	for (std::map<int, Client*>::iterator iter = _clientList.begin(); iter != _clientList.end(); iter++)
 	{
-		if (nickname == (*iter).second.get_nickname())
+		if (nickname == (*iter).second->get_nickname())
 			return true;
 	}
 	return false;
@@ -282,27 +324,37 @@ bool	Server::nickname_in_use(std::string nickname)
 int 	Server::add_channel(std::string channelName, Client &client)
 {
 	if (channelName.empty())
-	{
-		if (client.get_fd())
-			return -1;
-	}
+		return FAILURE;
+	if (get_channel(channelName) != nullptr)
+		return SUCCESS;
+	Channel *newChannel = new Channel(channelName, &client, this);
+	client.add_channel(newChannel);
+	_channelList.insert(std::make_pair(channelName, newChannel));
 	return SUCCESS;
 }
 
 int	    Server::remove_channel(std::string channelName)
 {
-	if (channelName.empty())
-		return -1;
+	std::map<std::string, Channel*>::iterator channelIter = _channelList.find(channelName);
+
+	if (channelIter == _channelList.end())
+		return FAILURE;
+	delete _channelList.at(channelName);
+	_channelList.erase(channelName);
 	return SUCCESS;
 }
 
-void	Server::increment_nfds() {
-	_nfds++;
+void		Server::remove_all_channels()
+{
+	for (std::map<std::string, Channel*>::iterator iter = _channelList.begin(); iter != _channelList.end(); iter = _channelList.begin())
+	{
+		delete iter->second;
+		_channelList.erase(iter->first);
+		if (_channelList.empty())
+			break ;
+	}
 }
 
-void	Server::decrement_nfds() {
-	_nfds--;
-}
 
 /* -------- CONSTRUCTORS & DESTRUCTOR -------- */
 Server::Server(std::string setpass, int setport)
@@ -314,6 +366,8 @@ Server::Server(std::string setpass, int setport)
 
 Server::~Server()
 {
+	remove_all_clients();
+	remove_all_channels();
 	return ;
 }
 
@@ -338,42 +392,42 @@ int	Server::get_port() const
 	return (_port);
 }
 
-std::map<int, Client>* Server::get_clientList()
+std::map<int, Client*> Server::get_clientList()
 {
-	return (&_clientList);
+	return (_clientList);
 }
 
-//in case the client isn't in the list at all, chuck a nullptr back? probably a better way to do this
-//I use this method for all the others, should ask Michiel at some point if he has a better idea.
+
 Client*	Server::get_client(int fd)
 {
-	std::map<int, Client>::iterator client = _clientList.find(fd);
+	std::map<int, Client*>::iterator client = _clientList.find(fd);
 	if (client == _clientList.end())
 		return (nullptr);
-	return (&client->second);
+	return (client->second);
 }
 
 Client* Server::get_client(std::string nickname)
 {
-	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); it++)
+	for (std::map<int, Client*>::iterator it = _clientList.begin(); it != _clientList.end(); it++)
 	{
-		if (it->second.get_nickname() == nickname)
-			return (&it->second);
+		if (it->second->get_nickname() == nickname)
+			return (it->second);
 	}
 	return (nullptr);
 }
 
-std::map<std::string, Channel>* Server::get_channelList()
+std::map<std::string, Channel*>* Server::get_channelList()
 {
 	return (&_channelList);
 }
 
 Channel*	Server::get_channel(std::string channelName)
 {
-	std::map<std::string, Channel>::iterator channel = _channelList.find(channelName);
+	std::map<std::string, Channel*>::iterator channel = _channelList.find(channelName);
 	if (channel == _channelList.end())
 		return (nullptr);
-	return (&channel->second);
+	return (channel->second);
 }
+
 /* -------- SETTERS -------- */
 

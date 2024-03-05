@@ -28,6 +28,7 @@ class Config
 
         //Others
 		void		print_config() const;
+		void		config_from_file(std::string filePath);
 };
 
 #endif

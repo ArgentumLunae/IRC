@@ -5,29 +5,25 @@
 /*                                                     +:+                    */
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2024/02/02 17:51:25 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/02/02 17:53:40 by mteerlin      ########   odam.nl         */
+/*   Created: 2024/02/05 16:22:21 by mteerlin      #+#    #+#                 */
+/*   Updated: 2024/03/02 18:20:12 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.hpp"
 #include "responsecodes.hpp"
+#include "responseMessage.hpp"
 #include <sstream>
 
-void register_user(Client *client, std::vector<std::string> tokens, Server *server)
+void register_username(Client *client, std::vector<std::string> tokens, Server *server)
 {
-	std::stringstream sstream;
-
-	if (tokens.size() <= 1 || tokens[1].empty())
-	{
-		sstream << ":" << server->get_config().get_host() << " " << ERR_NEEDMOREPARAMS << " " << tokens[0] << " :Not enough parameters";
-		server->msg_to_client(client->get_fd(), sstream.str());
-	}
-	else if (client->get_isRegistred())
-	{
-		sstream << ":" << server->get_config().get_host() << " " << ERR_ALREADYREGISTRED << " :You may not reregister";
-		server->msg_to_client(client->get_fd(), sstream.str());
-	}
+	if (tokens.size() < 5)
+		send_response_message(client, ERR_NEEDMOREPARAMS, "USER ", server);
+	else if (client->is_registered())
+		send_response_message(client, ERR_ALREADYREGISTRED, "", server);
 	else
+	{
 		client->set_username(tokens[1]);
+		client->set_hostname(tokens[2]);
+	}
 }

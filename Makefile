@@ -6,7 +6,7 @@
 #    By: mteerlin <mteerlin@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2023/01/20 13:49:24 by mteerlin      #+#    #+#                  #
-#    Updated: 2024/01/22 14:09:45 by mteerlin      ########   odam.nl          #
+#    Updated: 2024/02/21 16:14:11 by mteerlin      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,9 +20,9 @@ OBJ_FILES = $(addprefix $(OBJ_DIR)/, $(notdir $(patsubst %.cpp, %.o, $(SRC_FILES
 HDR_FILES := $(addprefix -I,$(shell find includes -type d -print))
 C_FLAGS = -Wall -Wextra -Werror
 STD_FLAGS := -std=c++98
-SAN_FLAGS := -g -fsanitize=thread
+SAN_FLAGS := -g -fsanitize=address
 GCC := c++
-CC = ${GCC} $(C_FLAGS) #$(STD_FLAGS) #$(SAN_FLAGS)
+CC = ${GCC} $(C_FLAGS) $(SAN_FLAGS)
 
 all: obj_dir $(NAME)
 

@@ -3,7 +3,7 @@
 
 enum errorReplies
 {
-	ERR_NOSCHNICK = 401,			// Used to indicate the nickname parameter supplied to a command is currently unused
+	ERR_NOSUCHNICK = 401,			// Used to indicate the nickname parameter supplied to a command is currently unused
 	ERR_NOSUCHSERVER = 402,			// Used to indicate the srerver name given currentlly doessn't exist
 	ERR_NOSUCHCHANNEL = 403,		// Used to indicate the given channel name is invalid
 	ERR_CANNOTSENDTOCHAN = 406,		// Sent to a user who is either (a) not on a channel which is mode +n or (b) not a chanop (or mode +v) on a channel which has mode +m set and is trying to send a PRIVMSG message to that channel
@@ -42,6 +42,7 @@ enum errorReplies
 	ERR_INVITEONLYCHAN = 473,		// 
 	ERR_BANNEDFROMCHAN = 474,		// 
 	ERR_BADCHANNELKEY = 475,		// 
+	ERR_BADCHANMASK = 476,			//
 	ERR_NOPRIVILEGES = 481,			// 
 	ERR_CHANOPRIVSNEEDED = 482,		// 
 	ERR_CANTKILLSERVER = 483,		// 
@@ -152,7 +153,6 @@ enum ircReserverNumerics
 	RPL_KILLDONE = 361,				//
 	RPL_CLOSEEND = 363,				//
 	RPL_MYPORTIS = 384,				//
-	RPL_BADCHANMASK = 476,			//
 };
 
 #endif
