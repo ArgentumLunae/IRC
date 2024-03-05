@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/02 15:01:22 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/02 17:13:44 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/05 14:00:38 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,18 +18,21 @@ void	quit_command(Client *client, std::vector<std::string> tokens, Server *serve
 	std::string quitMessage = "Quit :";
 	std::vector<Channel*> channelList = client->get_channelList();
 
-	if (tokens.size() > 1)
+	if (client->is_registered())
 	{
-		quitMessage += tokens[1];
-		if (quitMessage[0] != ':')
-			quitMessage += ":";
-		else
+		if (tokens.size() > 1)
 		{
-			for (size_t i = 2; i < tokens.size(); i++)
-				quitMessage += " " + tokens[i];
+			quitMessage += tokens[1];
+			if (quitMessage[0] != ':')
+				quitMessage += ":";
+			else
+			{
+				for (size_t i = 2; i < tokens.size(); i++)
+					quitMessage += " " + tokens[i];
+			}
 		}
+		for (std::vector<Channel*>::iterator iter = channelList.begin(); iter != channelList.end(); iter++)
+			(*iter)->msg_to_channel(client, quitPrefix + quitMessage);
 	}
-	for (std::vector<Channel*>::iterator iter = channelList.begin(); iter != channelList.end(); iter++)
-		(*iter)->msg_to_channel(client, quitPrefix + quitMessage);
 	server->client_disconnect(client->get_fd());
 }

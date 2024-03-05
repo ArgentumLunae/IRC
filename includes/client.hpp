@@ -24,7 +24,7 @@ class Client
 		bool		_registered;
 		Server		*_server;
 		std::vector<Channel *> _channelList;
-
+		std::vector<Channel *> _partedChannels;
 		std::deque<std::string> _incomingMessages;
 		std::string				_messageBuffer;
 

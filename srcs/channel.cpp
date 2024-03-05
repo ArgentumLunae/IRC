@@ -14,10 +14,8 @@ Channel::Channel(std::string name, Client* creator, Server* server) : _server(se
 	_userlimit = server->get_config().get_maxClients();
 	_owner = creator;
 	_clients = std::vector<Client*>{creator};
+	_partedClients = std::vector<Client*>{};
 	_operators = std::vector<Client*>{creator};
-
-	std::cout << _clients.front()->get_nickname() << std::endl;
-	std::cout << _operators.front()->get_nickname() << std::endl;
 }
 
 Channel::Channel(const Channel &copy) {
@@ -36,6 +34,7 @@ Channel &Channel::operator=(const Channel &copy)
 	_modes = copy._modes;
 	_userlimit = copy._userlimit;
 	_clients = copy._clients;
+	_partedClients = copy._partedClients;
 	_operators = copy._operators;
 	_server = copy._server;
 	_owner = copy._owner;
@@ -145,18 +144,13 @@ bool	Channel::add_client(Client* client)
 	for (size_t idx = 0; idx < _clients.size(); idx++)
 	{
 		if (_clients.at(idx) == client)
-		{
-			std::cout << "Client already in channel: " << _clients[idx]->get_nickname() << " at index " << idx << std::endl; // FOR TESTING, REMOVE LATER.
 			return SUCCESS;
-		}
 	}
 	_clients.push_back(client);
 	client->add_channel(this);
 	if (_operators.empty())
 		_operators.push_back(client);
-	else
-		std::cout << "FIRST OPERATOR: " << _operators[0]->get_nickname() << std::endl;
-	msg_to_channel(client, ":" + client->get_nickname() + "!" + client->get_username() + "@" + _server->get_config().get_host() + " JOIN :" + _name);
+	msg_to_channel(client, ":" + client->get_nickname() + "!" + client->get_hostmask() + " JOIN :" + _name);
 	return SUCCESS;
 }
 
@@ -176,6 +170,15 @@ int	Channel::client_rejoin(Client* client)
 	return FAILURE;
 }
 
+bool	Channel::part_client(Client* client)
+{
+	if (client == nullptr)
+		return FAILURE;
+	remove_client(client);
+	_partedClients.push_back(client);
+	return true;
+}
+
 bool	Channel::remove_client(Client* client)
 {
 	int clientPos;
@@ -184,10 +187,19 @@ bool	Channel::remove_client(Client* client)
 		return FAILURE;
 	clientPos = client_in_channel(client);
 	if (clientPos >= 0)
-	{
 		_clients.erase(_clients.begin() + clientPos);
-		_partedClients.push_back(client);
-	}
+	return SUCCESS;
+}
+
+bool	Channel::remove_parted_client(Client* client)
+{
+	int clientPos;
+
+	if (client == nullptr)
+		return FAILURE;
+	clientPos = client_was_in_channel(client);
+	if (clientPos >= 0)
+		_partedClients.erase(_partedClients.begin() + clientPos);
 	return SUCCESS;
 }
 
@@ -200,10 +212,15 @@ int	Channel::remove_operator(Client* client)
 	clientPos = client_is_operator(client);
 	if (clientPos >= 0)
 		_operators.erase(_operators.begin() + clientPos);
-	if (_operators.empty() && !_clients.empty())
+	if (_operators.empty())
 	{
-		_operators.push_back(_clients.front()); //employ make operator command
-		_server->msg_to_client(_clients.front()->get_fd(), ":" + _server->get_config().get_host() + " 381 " + _name + " :You're now a channel operator.");
+		if (!_clients.empty())
+		{
+			_operators.push_back(_clients.front()); //employ make operator command?
+			_server->msg_to_client(_clients.front()->get_fd(), ":" + _server->get_config().get_host() + " 381 " + _name + " :You're now a channel operator.");
+		}
+		else if (!_partedClients.empty())
+			_operators.push_back(_partedClients.front());
 	}
 	return SUCCESS;
 }
@@ -221,6 +238,8 @@ int	Channel::client_in_channel(Client* client)
 
 int	Channel::client_was_in_channel(Client* client)
 {
+	if (_partedClients.empty())
+		return -1;
 	for (size_t idx= 0; idx < _partedClients.size(); idx++)
 	{
 		if (_partedClients[idx] == client)

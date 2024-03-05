@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/28 12:20:11 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/04 16:57:24 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/05 14:13:58 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ static void	change_topic(Client *client, Channel *channel, std::string newTopic,
 {
 	std::string reply;
 
-	if ((channel->get_modes() & MODE_TOP) || channel->client_is_operator(client) < 0)
+	if ((channel->get_modes() & MODE_TOP) && channel->client_is_operator(client) < 0)
 		return send_response_message(client, ERR_CHANOPRIVSNEEDED, channel->get_name(), server);
 	channel->set_topic(newTopic);
 	reply = ":" + client->get_nickname() + "!" + client->get_hostmask() + " TOPIC " + channel->get_name() + " " + newTopic;
@@ -37,7 +37,7 @@ static void display_topic(Client *client, Channel *channel, Server *server)
 	if (topic.empty())
 		reply << RPL_NOTOPIC << " " << channel->get_name() << " :\x1b[35mNo topic is set\x1b[0m";
 	else
-		reply << RPL_NOTOPIC << " "  << channel->get_name() << " :\x1b[34m" << topic << "\x1b[0m";
+		reply << RPL_NOTOPIC << " "  << channel->get_name() << " \x1b[34m" << topic << "\x1b[0m";
 	server->msg_to_client(client->get_fd(), reply.str());
 }
 

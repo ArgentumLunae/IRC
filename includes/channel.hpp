@@ -65,7 +65,9 @@ class Channel
         //Others (Channel commands)
 		bool	add_client(Client* client);
 		int		client_rejoin(Client *client);
+		bool	part_client(Client* client);
 		bool	remove_client(Client* client);
+		bool	remove_parted_client(Client* client);
 		int		remove_operator(Client* client);
 		int		client_in_channel(Client* client);
 		int		client_was_in_channel(Client* client);

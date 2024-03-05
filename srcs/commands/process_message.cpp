@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/04 17:45:13 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/05 17:02:06 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,11 @@ int process_message(Client *client, std::string message, Server *server)
 			server->finish_client_registration(client);
 			break ;
 		}
+		case CMD_QUIT:
+		{
+			quit_command(client, tokens, server);
+			return SUCCESS;
+		}
 	}
 	if (client->is_registered())
 	{
@@ -136,17 +141,12 @@ int process_message(Client *client, std::string message, Server *server)
 			}
 			case CMD_PING:
 			{
-				std::cout << "PING COMMAND RECEIVED" << std::endl;
+				ping_command(client, tokens, server);
 				break ;
 			}
 			case CMD_PONG:
 			{
-				std::cout << "PONG COMMAND RECEIVED" << std::endl;
-				break ;
-			}
-			case CMD_QUIT:
-			{
-				quit_command(client, tokens, server);
+				pong_command(client, tokens, server);
 				break ;
 			}
 			default:

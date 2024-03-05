@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/04 14:55:12 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/05 16:44:10 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 int		Server::init_server()
 {
 	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-	_config.config_from_file("/home/mteerlin/Documents/IRC/gh_irc/configs/serverconfig.conf");
+	_config.config_from_file("configs/serverconfig.conf");
 	_config.print_config();
 	if (_serverSocket < 0)
 	{
@@ -114,10 +114,7 @@ void	Server::check_revents()
 		if ((_fds[i].revents & POLLHUP) && i > 0)
 			client_disconnect(_fds[i].fd);
 		if ((_fds[i].revents & POLLRDHUP) && i > 0)
-		{
-			std::cout << "POLLRDHUP" << std::endl;
 			client_disconnect(_fds[i].fd);
-		}
 	}
 }
 
@@ -167,8 +164,6 @@ void	Server::client_disconnect(int clientfd)
 	}
 	std::cout << "Client #" << clientfd << " not found." << std::endl;
 }
-
-// Companion function for incomming_data(), where best to put this?
 
 int	Server::incoming_data(size_t idx)
 {
