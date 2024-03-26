@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/05 16:44:10 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/06 14:31:18 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,6 +133,14 @@ int	Server::client_connect()
 	}
 	std::cout << "New incoming connection - #" << clientSocket.fd << std::endl;
 	clientSocket.events = POLLIN | POLLOUT | POLLRDHUP;
+	if (_clientList.size() >= _config.get_maxClients())
+	{
+		std::string msg = ":" + _config.get_host() + " 471 ERROR :Server is full. Please try again later.";
+		if (send(clientSocket.fd, msg.c_str(), msg.length(), MSG_NOSIGNAL) < 0)
+			std::cerr << "send() error: " << strerror(errno) << std::endl;
+		close(clientSocket.fd);
+		return FAILURE;
+	}
 	add_client(clientSocket.fd);
 	_fds.push_back(clientSocket);
 	return SUCCESS;
@@ -281,7 +289,6 @@ int		Server::start_server()
 
 int 	Server::add_client(int fd)
 {
-	std::cout << "|" << fd << "|" << std::endl;
 	if (get_client(fd) != nullptr)
 		return (-1);	// look into using specific defines for this.
 	Client *client = new Client(fd, this);
