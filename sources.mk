@@ -3,6 +3,7 @@ srcs/commands/nickname.cpp \
 srcs/commands/password.cpp \
 srcs/commands/username.cpp \
 srcs/commands/join.cpp \
+srcs/commands/kick.cpp \
 srcs/commands/private_message.cpp \
 srcs/commands/names.cpp \
 srcs/commands/part.cpp \
