@@ -278,3 +278,29 @@ void	Channel::msg_to_channel(Client *client, std::string msg)
 		_server->msg_to_client((*iter)->get_fd(), msg);
 	}
 }
+
+int			Client::removed_from_channel(Channel *channel)
+{
+	for (std::vector<Channel*>::iterator iter = _channelList.begin(); iter != _channelList.end(); iter++)
+	{
+		if (*iter == channel)
+		{
+			channel->remove_client(this);
+			_channelList.erase(iter);
+			if ((*iter)->get_clients().empty()  && (*iter)->get_partedClients().empty())
+				_server->remove_channel((*iter)->get_name());
+			return SUCCESS;
+		}
+	}
+	return FAILURE;
+}
+
+int		Channel::kick(Client *client, Client* kicker)
+{
+	if (client == nullptr || kicker == nullptr)
+		return FAILURE;
+	if (check_operator_priv(kicker) == false)
+		return FAILURE;
+	client->removed_from_channel(this);
+	return SUCCESS;
+}

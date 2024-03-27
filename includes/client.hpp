@@ -65,6 +65,7 @@ class Client
 		int			leave_channel(Channel *channel);
 		void		leave_all_channels(void);
 		bool		is_in_channel(std::string channelName);
+		int			removed_from_channel(Channel *channel);
 
 		void	push_message(std::string message);
 		std::string	pop_message(void);
