@@ -6,7 +6,7 @@
 /*   By: ahorling <ahorling@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/27 18:01:28 by ahorling      #+#    #+#                 */
-/*   Updated: 2024/03/27 20:04:25 by ahorling      ########   odam.nl         */
+/*   Updated: 2024/03/28 16:20:15 by ahorling      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ void	invite_command(Client *client, std::vector<std::string> tokens, Server *ser
 	std::string invitedChannel;
 	std::string invitee;
 	std::string invitePrefix;
+	std::string inviteMessage;
 
 	if (tokens.size() < 2)
 	{
@@ -59,22 +60,34 @@ void	invite_command(Client *client, std::vector<std::string> tokens, Server *ser
 		}
 	}
 
-//NEED TO GET THE SPECIFIC CLIENT POINTER THAT IS LINKED TO THE NICKNAME, BUT THE MAP IS KEYED WITH INTS NOOOOO
+	//NEED TO GET THE SPECIFIC CLIENT POINTER THAT IS LINKED TO THE NICKNAME
 
-	std::map<std::string, Client*>::iterator invitedClient;
-	
+	Client* inv = nullptr;
+	std::map<int, Client*> clientList = server->get_clientList();
 
-	for (size_t i = 0; i < server->get_clientList.size(); i++)
+	for (std::map<int, Client*>::iterator invitedClient = clientList.begin(); invitedClient != clientList.end(); ++invitedClient)
 	{
-		if (invitedClient[i]->get_nickname() == invitee)
+		if (invitedClient->second->get_nickname() == invitee)
 		{
-			invitedClient = clientList[i];
+			inv = invitedClient->second;
 			break;
 		}
 	}
-	if (invitedClient->second->is_in_channel(invitedChannel))
+
+	if (inv == nullptr)
+	{
+		send_response_message(client, ERR_NOSUCHNICK, invitee, server);
+		return;
+	}
+	else if (inv->is_in_channel(invitedChannel))
 	{
 		send_response_message(client, ERR_USERONCHANNEL, invitedChannel, server);
 		return;
 	}
+
+	//SEND CONFIRMATION MESSAGE TO THE INVITER, AND A INVITE MESSAGE TO THE INVITEE
+
+	server->msg_to_client(inv->get_fd(), invitePrefix + " INVITE " + invitee + " " + invitedChannel);
+	server->msg_to_client(client->get_fd(), invitePrefix + " 341 " + invitee + " " + invitedChannel);
+	currentChannel->second->addInviteList(inv);
 }

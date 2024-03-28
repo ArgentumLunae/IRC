@@ -74,6 +74,7 @@ class Channel
 		int		client_in_channel(Client* client);
 		int		client_was_in_channel(Client* client);
 		int		client_is_operator(Client* client);
+		int		addInviteList(Client* client);
 
 		//Others (User actions)
 		int		leave_channel(Client* client);

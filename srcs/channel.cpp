@@ -10,7 +10,7 @@ Channel::Channel(std::string name, Client* creator, Server* server) : _server(se
 	_name = name;
 	_topic = "";
 	_password = "";
-	_modes = MODE_TOP + MODE_LIM;
+	_modes = MODE_TOP + MODE_LIM + MODE_INV;
 	_userlimit = server->get_config().get_maxClients();
 	_owner = creator;
 	_clients = std::vector<Client*>{creator};
@@ -333,4 +333,16 @@ int		Channel::kick(Client *client, Client* kicker)
 		return FAILURE;
 	client->removed_from_channel(this);
 	return SUCCESS;
+}
+
+int		Channel::addInviteList(Client *client)
+{
+	if (is_invited(client) > 0)
+		return SUCCESS;
+	else
+	{
+		_invitelist.push_back(client);
+		return SUCCESS;
+	}
+	return FAILURE;
 }

@@ -4,6 +4,7 @@ srcs/commands/password.cpp \
 srcs/commands/username.cpp \
 srcs/commands/join.cpp \
 srcs/commands/kick.cpp \
+srcs/commands/invite.cpp \
 srcs/commands/private_message.cpp \
 srcs/commands/names.cpp \
 srcs/commands/part.cpp \

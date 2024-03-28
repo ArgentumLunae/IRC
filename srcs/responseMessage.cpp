@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 16:56:16 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/27 19:54:41 by ahorling      ########   odam.nl         */
+/*   Updated: 2024/03/28 15:50:04 by ahorling      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ static std::map<int, std::string>	map_response_messages()
 	map.insert(std::make_pair(ERR_BADCHANMASK, " :Bad channel mask"));
 	map.insert(std::make_pair(ERR_BADCHANNELKEY, " :Cannot join channel (+k)"));
 	map.insert(std::make_pair(ERR_USERNOTINCHANNEL, " :They aren't on that channel"));
-	map.insert(std::make_pair(ERR_USERONCHANNEL, " :is already on channel"));
+	map.insert(std::make_pair(ERR_USERONCHANNEL, " :Is already on channel"));
 	// map.insert(std::make_pair());
 
 
