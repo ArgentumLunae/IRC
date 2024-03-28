@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/27 14:31:02 by ahorling      ########   odam.nl         */
+/*   Updated: 2024/03/28 16:51:16 by ahorling      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,7 @@ int process_message(Client *client, std::string message, Server *server)
 			}
 			case CMD_INVITE:
 			{
-				std::cout << "INVITE COMMAND RECEIVED" << std::endl;
+				invite_command(client, tokens, server);
 				break ;
 			}
 			case CMD_TOPIC:
