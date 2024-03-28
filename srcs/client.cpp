@@ -181,6 +181,7 @@ void			Client::leave_all_channels(void)
 	{
 			(*iter)->remove_client(this);
 			(*iter)->remove_operator(this);
+			(*iter)->remove_invite(this);
 			_channelList.erase(iter);
 			if ((*iter)->get_clients().empty()  && (*iter)->get_partedClients().empty())
 				_server->remove_channel((*iter)->get_name());

@@ -232,6 +232,29 @@ int	Channel::remove_operator(Client* client)
 	return SUCCESS;
 }
 
+int Channel::is_invited(Client* client)
+{
+	if (_invitelist.empty())
+		return -1;
+	for (size_t idx= 0; idx < _invitelist.size(); idx++)
+	{
+		if (_invitelist[idx] == client)
+			return idx;
+	}
+	return -1;
+}
+
+int	Channel::remove_invite(Client* client)
+{
+	int clientPos;
+
+	if(client == nullptr)
+		return FAILURE;
+	clientPos = is_invited(client);
+	if (clientPos >= 0)
+		_invitelist.erase(_clients.begin() + clientPos);
+	return SUCCESS;
+}
 
 int	Channel::client_in_channel(Client* client)
 {
