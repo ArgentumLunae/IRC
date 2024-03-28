@@ -79,8 +79,8 @@ class Channel
 		int		add_operator(Client* to_promote, Client* promoter);
 		int		remove_operator(Client* to_demote, Client* demoter);
 		int		invite(Client* invitee, Client* inviter);
-		int		remove_invite(Client* invitee, Client* inviter);
-		bool	is_invited(std::string nickname);
+		int		remove_invite(Client* client);
+		int		is_invited(Client* client);
 
 		void	msg_to_channel(Client *client, std::string msg);
 };
