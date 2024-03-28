@@ -16,6 +16,7 @@ Channel::Channel(std::string name, Client* creator, Server* server) : _server(se
 	_clients = std::vector<Client*>{creator};
 	_partedClients = std::vector<Client*>{};
 	_operators = std::vector<Client*>{creator};
+	_inviteOnly = false;
 }
 
 Channel::Channel(const Channel &copy) {
@@ -39,6 +40,7 @@ Channel &Channel::operator=(const Channel &copy)
 	_server = copy._server;
 	_owner = copy._owner;
 	_invitelist = copy._invitelist;
+	_inviteOnly = copy._inviteOnly;
 	return(*this);
 }
 
@@ -92,6 +94,11 @@ std::vector<Client*>	Channel::get_operators() const
 Client*	Channel::get_owner() const
 {
 	return (_owner);
+}
+
+bool	Channel::get_inviteStatus() const
+{
+	return (_inviteOnly);
 }
 
 ///SETTERS

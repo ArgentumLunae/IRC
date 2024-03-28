@@ -30,6 +30,7 @@ class Channel
 		std::vector<Client*>	_operators;
 		std::vector<Client*>	_invitelist;
 		size_t		_userlimit;
+		bool		_inviteOnly;
 
 		bool	check_operator_priv(Client *client);
 
@@ -52,6 +53,7 @@ class Channel
 		std::vector<Client*>	get_operators() const;
 		Client*					get_owner() const;
 		size_t	                get_userlimit() const;
+		bool					get_inviteStatus() const;
 
         //Setters
 		int		set_invite(Client* client);
