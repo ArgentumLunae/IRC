@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/09 15:37:20 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/29 16:48:01 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/29 17:19:46 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,6 @@
 #include "responsecodes.hpp"
 #include "process_message.hpp"
 #include "utils.h"
-
-// TODO: finish working on this
 
 static bool	pass_channel_modes(Client *client, Channel *channel, Server *server)
 {
