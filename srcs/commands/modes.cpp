@@ -6,23 +6,57 @@
 /*   By: ahorling <ahorling@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/28 16:41:43 by ahorling      #+#    #+#                 */
-/*   Updated: 2024/03/28 20:17:53 by ahorling      ########   odam.nl         */
+/*   Updated: 2024/03/29 15:34:38 by ahorling      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "server.h"
+#include "server.hpp"
 #include "responseMessage.hpp"
 #include "responsecodes.hpp"
 #include "utils.h"
 #include "process_message.hpp"
 
-char	validinput(char input)
+
+//ALL THE DIFFERENT MODE COMMANDS GO HERE
+
+void	toggleInviteOnly(char toggle, Channel* channel)
 {
-	if (input != '-' && input != '+')
-		return ('0');
-	
-	if (input != 't' && input != 'k' && input != 'l' && input != 'i' && input != 'o')
-		return (input);
+	if (toggle == "+" && channel->get_inviteStatus() == true)
+		return;
+	else if (toggle == "+" && channel->get_inviteStatus() == false)
+	{
+		channel->set_inviteOnly(true);
+		channel->set_modes(MODE_INV);
+		return;
+	}
+	else if (toggle == "-" && channel->getinvitestatus() == true)
+	{
+		channel->set_inviteOnly(false);
+		channel->unset_modes(MODE_INV)
+		return;
+	}
+	else if (toggle == "-" && chanel->getinvitestatus() == false)
+		return;
+}
+
+void	toggleTopicRestriction(char toggle, Channel* channel)
+{
+
+}
+
+void	changePassword(char toggle, std::string newPass, Channel* channel)
+{
+
+}
+
+void	setUserLimit(char toggle, std::string newLimit, Channel* channel)
+{
+
+}
+
+void	 promoteOperator(char toggle, std::string toPromote, Channel* channel)
+{
+
 }
 
 std::map<char, char>	split_modes(std::string tokens)
@@ -34,14 +68,12 @@ std::map<char, char>	split_modes(std::string tokens)
 	//if the first symbol is neither a + or -, send back an empty map
 	for (int i = 0; i < tokens.size(); i++)
 	{
-		if (validinput(token[i]) == '0')
-			return nullptr;
 		if (token[i] == "+" || token[i] == "-")
 		{
 			sign = token[i];
 			flag = '0';
 		}
-		else if (token[i] != 't' || token[i] != 'k' || token[i] != 'l' || token[i] != 'i' || token[i] != 'o')
+		else
 			flag = token[i];
 		if (sign != '0' && flag != '0')
 			modesList[flag].insert(sign);
@@ -87,8 +119,28 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 			return;
 		for (std::map<char, char> modeitr = modesList.begin(); modeitr != clientList.end(); ++modeitr)
 		{
-			if (modeitr->first == "i")
-
+			switch (modeitr->first)
+			{
+				case "i":
+					toggleInviteOnly(modeitr->second, currentChannel);
+					break;
+				case "t":
+					toggleTopicRestriction(modeitr->second, currentChannel);
+					break;
+				case "k":
+					changePassword(modeitr->second, nullptr, currentChannel);
+					break;
+				case "l":
+					setUserLimit(modeitr->second, nullptr, currentChannel);
+					break;
+				case "o":
+					promoteOperator(modeitr->second, nullptr, currentChannel);
+					break;
+				default:
+					send_response_message(client, ERR_UNKNOWNMODE, modeitr->first);
+			}
 		}
+		server->msg_to_client()
+		return;
 	}
 }

@@ -105,7 +105,13 @@ bool	Channel::get_inviteStatus() const
 
 int	Channel::set_modes(uint8_t newmodes)
 {
-	_modes = newmodes;
+	_modes += newmodes;
+	return SUCCESS;
+}
+
+int Channel::unset_mode(uint8_t newmodes)
+{
+	_modes -= newmodes;
 	return SUCCESS;
 }
 
@@ -133,6 +139,12 @@ int Channel::set_limit(size_t limit, Client* client)
 int	Channel::set_topic(std::string topic)
 {
 	_topic = topic;
+	return (SUCCESS);
+}
+
+bool	Channel::set_inviteOnly(bool flag)
+{
+	_inviteOnly = flag;
 	return (SUCCESS);
 }
 

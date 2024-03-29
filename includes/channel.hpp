@@ -56,8 +56,9 @@ class Channel
 		bool					get_inviteStatus() const;
 
         //Setters
-		int		set_invite(Client* client);
+		bool	set_inviteOnly(bool);
 		int		set_modes(uint8_t newmodes);
+		int 	unset_mode(uint8_t newmodes);
 		int		set_password(std::string password, Client* client);
 		int		set_limit(size_t limit, Client* client);
 		int		set_topic_operator(Client* client);
