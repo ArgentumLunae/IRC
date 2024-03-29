@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/24 18:09:34 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/28 16:51:16 by ahorling      ########   odam.nl         */
+/*   Updated: 2024/03/29 18:48:26 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,7 +126,7 @@ int process_message(Client *client, std::string message, Server *server)
 			}
 			case CMD_MODE:
 			{
-				std::cout << "MODE COMMAND RECEIVED" << std::endl;
+				change_mode(client, tokens, server);
 				break ;
 			}
 			case CMD_INVITE:
