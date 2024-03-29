@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/09 15:37:20 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/29 19:29:00 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/29 21:00:32 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,12 @@ static bool	pass_channel_modes(Client *client, Channel *channel, Server *server)
 {
 	if (channel->get_modes() & MODE_LIM && channel->get_clients().size() >= channel->get_userlimit())
 	{
-		send_response_message(client, ERR_CHANNELISFULL, channel->get_name(), server);
+		send_response_message(client, ERR_CHANNELISFULL, client->get_nickname() + "" + channel->get_name(), server);
 		return false;
 	}
 	if (channel->get_modes() & MODE_INV && !channel->is_invited(client)) //Add a check to see if the client is on the invite list if JOIN is used alongside INVITE
 	{
-		send_response_message(client, ERR_INVITEONLYCHAN, channel->get_name(), server);
+		send_response_message(client, ERR_INVITEONLYCHAN, client->get_nickname() + "" + channel->get_name(), server);
 		return false;
 	}
 	return true;
@@ -47,7 +47,7 @@ static bool check_channel_key(Client *client, Channel *channel, std::string key,
 
 	if (channel->get_modes() & MODE_KEY && !channel->get_password().empty() && key != channel->get_password())
 	{
-		send_response_message(client, ERR_BADCHANNELKEY, "", server);
+		send_response_message(client, ERR_BADCHANNELKEY, client->get_nickname() + " " + channel->get_name(), server);
 		return false;
 	}
 	return true;
