@@ -6,7 +6,7 @@
 /*   By: ahorling <ahorling@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/28 16:41:43 by ahorling      #+#    #+#                 */
-/*   Updated: 2024/03/29 15:34:38 by ahorling      ########   odam.nl         */
+/*   Updated: 2024/03/29 17:23:34 by ahorling      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,43 +21,118 @@
 
 void	toggleInviteOnly(char toggle, Channel* channel)
 {
-	if (toggle == "+" && channel->get_inviteStatus() == true)
+	if (toggle == '+' && channel->get_inviteStatus() == true)
 		return;
-	else if (toggle == "+" && channel->get_inviteStatus() == false)
+	else if (toggle == '+' && channel->get_inviteStatus() == false)
 	{
 		channel->set_inviteOnly(true);
 		channel->set_modes(MODE_INV);
 		return;
 	}
-	else if (toggle == "-" && channel->getinvitestatus() == true)
+	else if (toggle == '-' && channel->getinvitestatus() == true)
 	{
 		channel->set_inviteOnly(false);
 		channel->unset_modes(MODE_INV)
 		return;
 	}
-	else if (toggle == "-" && chanel->getinvitestatus() == false)
+	else if (toggle == '-' && chanel->getinvitestatus() == false)
 		return;
 }
 
 void	toggleTopicRestriction(char toggle, Channel* channel)
 {
-
+	if (toggle == '+' && channel->get_topicStatus() == true)
+		return;
+	else if (toggle == '+' && channel ->get_topicStatus() == false)
+	{
+		channel->set_topicStatus(true);
+		channel->set_modes(MODE_TOP);
+		return;
+	}
+	else if (toggle == '-' && channel ->get_topicStatus() == true)
+	{
+		channel->set_topicStatus(false);
+		channel->unset_modes(MODE_TOP);
+		return;
+	}
+	else if (toggle == '-' && channel ->get_topicStatus() == false)
+		return;
 }
 
 void	changePassword(char toggle, std::string newPass, Channel* channel)
 {
-
+	if (toggle == '-')
+	{
+		// MAKE SURE TO SET PASSWORD MODE
+		channel->unset_mode(MODE_KEY);
+		channel->set_password("");
+		return;
+	}
+	else if (toggle == '+' && newPass == nullptr)
+		return;
+	else if (toggle == '+' && newPass != nullptr)
+	{
+		channel->set_mode(MODE_KEY);
+		channel->setpassword(newPass);
+		return;
+	}
 }
 
 void	setUserLimit(char toggle, std::string newLimit, Channel* channel)
 {
+	if (toggle == '-')
+	{
+		channel->set_limit(channel->get_server()->get_config().get_maxClients());
+		return;
+	}
+	else if (toggle == '+' && newLimit == nullptr)
+		return;
+	else if (toggle == '+' && newLimit != nullptr)
+	{
+		int limit = newLimit.stoi();
+		//check to see if it is an actual number
+		if (limit < 0 || limit > channel->get_server()->get_config().get_maxClients())
+			return;
+		channel->set_limit(limit);
+		return;
+	}
 
 }
 
 void	 promoteOperator(char toggle, std::string toPromote, Channel* channel)
 {
+	Client* target = nullptr;
+	std::vector<Client*> clientList = currentChannel->second->get_clients();
 
+	for (size_t j = 0; j < clientList.size(); j++)
+	{
+		if (clientList[j]->get_nickname() == kickedNames[i])
+		{
+			target = clientList[j];
+			break;
+		}
+	}
+	if (target == nullptr)
+	{
+		send_response_message(client, ERR_USERNOTINCHANNEL, toPromote + " " + channel->get_name(), server);
+		continue;
+	}
+
+	if (toggle == '-')
+	{
+		channel->remove.operator(target);
+		return;
+	}
+	else if (toggle == '+' && channel->client_is_operator(target) >= 0)
+		return;
+	else if (toggle =='+' && channel->client_is_operator(target < 0))
+	{
+		channel->add_operator(target);
+		return;
+	}
 }
+
+//END COMMAND FUNCTIONS
 
 std::map<char, char>	split_modes(std::string tokens)
 {
@@ -115,32 +190,83 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 	if (tokens.size() == 3)
 	{
 		modesList = split_modes(tokens[2]);
-		if (modesList = nullptr)
+		if (modesList.empty())
 			return;
-		for (std::map<char, char> modeitr = modesList.begin(); modeitr != clientList.end(); ++modeitr)
+		for (std::map<char, char>::iterator modeitr = modesList.begin(); modeitr != clientList.end(); ++modeitr)
 		{
 			switch (modeitr->first)
 			{
 				case "i":
-					toggleInviteOnly(modeitr->second, currentChannel);
+					toggleInviteOnly(modeitr->second, currentChannel->second);
 					break;
 				case "t":
-					toggleTopicRestriction(modeitr->second, currentChannel);
+					toggleTopicRestriction(modeitr->second, currentChannel->second);
 					break;
 				case "k":
-					changePassword(modeitr->second, nullptr, currentChannel);
+					changePassword(modeitr->second, nullptr, currentChannel->second);
 					break;
 				case "l":
-					setUserLimit(modeitr->second, nullptr, currentChannel);
+					setUserLimit(modeitr->second, nullptr, currentChannel->second);
 					break;
 				case "o":
-					promoteOperator(modeitr->second, nullptr, currentChannel);
+					promoteOperator(modeitr->second, nullptr, currentChannel->second);
 					break;
 				default:
 					send_response_message(client, ERR_UNKNOWNMODE, modeitr->first);
 			}
 		}
-		server->msg_to_client()
 		return;
 	}
+
+	if (tokens.size() > 3)
+	{
+		int count = 0;
+
+		modesList = split_modes(tokens[2]);
+		if (modesList.empty())
+			return;
+		switch (modeitr->first)
+		{
+			case "i":
+				toggleInviteOnly(modeitr->second, currentChannel->second);
+				break;
+			case "t":
+				toggleTopicRestriction(modeitr->second, currentChannel->second);
+				break;
+			case "k":
+				if (modeitr->second == '-')
+					changePassword(modeitr->second, nullptr, currentChannel->second);
+				else
+				{
+					if (!token[3 + count])
+						return;
+					changePassword(modeitf->second, token[3 + count], currentChannel->second);
+					count++;
+				}
+				break;
+			case "l":
+				if (modeitr->second == '-')
+					setUserLimit(modeitr->second, nullptr, currentChannel->second);
+				else
+				{
+					if (!token[3 + count])
+						return;
+					setUserLimit(modeitr->second, token[3 + count], currentChannel->second);
+					count++;
+				}
+				break;
+			case "o":
+				if (!token[3 + count])
+					return;
+				promoteOperator(modeitr->second, token[3 + count], currentChannel->second);
+				count++;
+				break;
+			default:
+				send_response_message(client, ERR_UNKNOWNMODE, modeitr->first);
+		}
+	}
+
+	//Once finished with tasks, send a response message to all clients with all the successfully sent mode changes
+	server->msg_to_client(client....)
+	currentChannel->second->msg_to_channel(client....)
 }

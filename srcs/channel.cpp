@@ -10,7 +10,7 @@ Channel::Channel(std::string name, Client* creator, Server* server) : _server(se
 	_name = name;
 	_topic = "";
 	_password = "";
-	_modes = MODE_TOP + MODE_LIM + MODE_INV;
+	_modes = MODE_TOP + MODE_LIM;
 	_userlimit = server->get_config().get_maxClients();
 	_owner = creator;
 	_clients = std::vector<Client*>{creator};
@@ -101,6 +101,11 @@ bool	Channel::get_inviteStatus() const
 	return (_inviteOnly);
 }
 
+bool	Channel::get_topicStatus() const
+{
+	return (_topicStatus);
+}
+
 ///SETTERS
 
 int	Channel::set_modes(uint8_t newmodes)
@@ -115,23 +120,14 @@ int Channel::unset_mode(uint8_t newmodes)
 	return SUCCESS;
 }
 
-//do we need specific password settings/rules that we need to abide by?
-int	Channel::set_password(std::string password, Client* client)
+int	Channel::set_password(std::string password)
 {
-	if (client == nullptr)
-		return (FAILURE);
-	if (check_operator_priv(client) == false)
-		return (FAILURE);
 	_password = password;
 	return (SUCCESS);
 }
 
-int Channel::set_limit(size_t limit, Client* client)
+int Channel::set_limit(int limit)
 {
-	if (client == nullptr)
-		return (FAILURE);
-	if (check_operator_priv(client) == false)
-		return (FAILURE);
 	_userlimit = limit;
 	return (SUCCESS);
 }
@@ -139,6 +135,12 @@ int Channel::set_limit(size_t limit, Client* client)
 int	Channel::set_topic(std::string topic)
 {
 	_topic = topic;
+	return (SUCCESS);
+}
+
+bool	Channel::set_topicStatus(bool flag)
+{
+	_topicStatus = flag;
 	return (SUCCESS);
 }
 
@@ -242,6 +244,19 @@ int	Channel::remove_operator(Client* client)
 			_operators.push_back(_partedClients.front());
 	}
 	return SUCCESS;
+}
+
+int Channel::add_operator(Client* client)
+{
+	int clientPos;
+
+	if (client == nullptr)
+		return FAILURE;
+	clientPos = client_is_operator(client);
+	if (clientPos >= 0)
+		return SUCCESS;
+	_operators.push_back(client);
+	return FAILURE;
 }
 
 int Channel::is_invited(Client* client)
