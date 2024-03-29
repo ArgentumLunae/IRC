@@ -6,7 +6,7 @@
 /*   By: ahorling <ahorling@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/28 16:41:43 by ahorling      #+#    #+#                 */
-/*   Updated: 2024/03/29 18:39:55 by ahorling      ########   odam.nl         */
+/*   Updated: 2024/03/29 19:28:54 by ahorling      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,41 +22,41 @@
 std::string	toggleInviteOnly(char toggle, Channel* channel)
 {
 	if (toggle == '+' && channel->get_inviteStatus() == true)
-		return;
+		return "";
 	else if (toggle == '+' && channel->get_inviteStatus() == false)
 	{
 		channel->set_inviteOnly(true);
 		channel->set_modes(MODE_INV);
-		return;
+		return ("+i");
 	}
-	else if (toggle == '-' && channel->getinvitestatus() == true)
+	else if (toggle == '-' && channel->getinviteStatus() == true)
 	{
 		channel->set_inviteOnly(false);
-		channel->unset_modes(MODE_INV)
-		return;
+		channel->unset_modes(MODE_INV);
+		return ("-i");
 	}
-	else if (toggle == '-' && chanel->getinvitestatus() == false)
-		return;
+	else if (toggle == '-' && chanel->getinviteStatus() == false)
+		return "";
 }
 
 std::string	toggleTopicRestriction(char toggle, Channel* channel)
 {
 	if (toggle == '+' && channel->get_topicStatus() == true)
-		return;
+		return "";
 	else if (toggle == '+' && channel ->get_topicStatus() == false)
 	{
 		channel->set_topicStatus(true);
 		channel->set_modes(MODE_TOP);
-		return;
+		return ("+t");
 	}
 	else if (toggle == '-' && channel ->get_topicStatus() == true)
 	{
 		channel->set_topicStatus(false);
 		channel->unset_modes(MODE_TOP);
-		return;
+		return ("-t");
 	}
 	else if (toggle == '-' && channel ->get_topicStatus() == false)
-		return;
+		return "";
 }
 
 std::string	changePassword(char toggle, std::string newPass, Channel* channel)
@@ -66,15 +66,15 @@ std::string	changePassword(char toggle, std::string newPass, Channel* channel)
 		// MAKE SURE TO SET PASSWORD MODE
 		channel->unset_mode(MODE_KEY);
 		channel->set_password("");
-		return;
+		return ("-k");
 	}
-	else if (toggle == '+' && newPass == nullptr)
-		return;
-	else if (toggle == '+' && newPass != nullptr)
+	else if (toggle == '+' && newPass == "")
+		return "";
+	else if (toggle == '+' && newPass != "")
 	{
 		channel->set_mode(MODE_KEY);
 		channel->setpassword(newPass);
-		return;
+		return ("+k");
 	}
 }
 
@@ -83,18 +83,20 @@ std::string	setUserLimit(char toggle, std::string newLimit, Channel* channel)
 	if (toggle == '-')
 	{
 		channel->set_limit(channel->get_server()->get_config().get_maxClients());
-		return;
+		return ("-l");
 	}
-	else if (toggle == '+' && newLimit == nullptr)
+	else if (toggle == '+' && newLimit == "")
 		return;
-	else if (toggle == '+' && newLimit != nullptr)
+	else if (toggle == '+' && newLimit != "")
 	{
-		int limit = newLimit.stoi();
-		//check to see if it is an actual number
+		try
+			int limit = std::stoi(newLimit);
+		catch(const std::exception& e)
+			return;
 		if (limit < 0 || limit > channel->get_server()->get_config().get_maxClients())
 			return;
 		channel->set_limit(limit);
-		return;
+		return ("+l");
 	}
 
 }
@@ -121,14 +123,14 @@ std::string	 promoteOperator(char toggle, std::string toPromote, Channel* channe
 	if (toggle == '-')
 	{
 		channel->remove.operator(target);
-		return;
+		return ("-o");
 	}
 	else if (toggle == '+' && channel->client_is_operator(target) >= 0)
 		return;
 	else if (toggle =='+' && channel->client_is_operator(target < 0))
 	{
 		channel->add_operator(target);
-		return;
+		return ("+o");
 	}
 }
 
@@ -232,37 +234,37 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 			switch (modeitr->first)
 			{
 				case "i":
-					toggleInviteOnly(modeitr->second, currentChannel->second);
+					modeChanges += toggleInviteOnly(modeitr->second, currentChannel->second);
 					break;
 				case "t":
-					toggleTopicRestriction(modeitr->second, currentChannel->second);
+					modeChanges += toggleTopicRestriction(modeitr->second, currentChannel->second);
 					break;
 				case "k":
 					if (modeitr->second == '-')
-						changePassword(modeitr->second, nullptr, currentChannel->second);
+						modeChanges += changePassword(modeitr->second, "", currentChannel->second);
 					else
 					{
 						if (!token[3 + count])
 							return;
-						changePassword(modeitf->second, token[3 + count], currentChannel->second);
+						modeChanges += changePassword(modeitf->second, token[3 + count], currentChannel->second);
 						count++;
 					}
 					break;
 				case "l":
 					if (modeitr->second == '-')
-						setUserLimit(modeitr->second, nullptr, currentChannel->second);
+						modeChanges += setUserLimit(modeitr->second, "", currentChannel->second);
 					else
 					{
 						if (!token[3 + count])
 							return;
-						setUserLimit(modeitr->second, token[3 + count], currentChannel->second);
+						modeChanges += setUserLimit(modeitr->second, token[3 + count], currentChannel->second);
 						count++;
 					}
 					break;
 				case "o":
 					if (!token[3 + count])
 						return;
-					promoteOperator(modeitr->second, token[3 + count], currentChannel->second);
+					modeChanges += promoteOperator(modeitr->second, token[3 + count], currentChannel->second);
 					count++;
 					break;
 				default:
@@ -272,7 +274,15 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 	}
 
 	//Once finished with tasks, send a response message to all clients with all the successfully sent mode changes
-	modePrefix = ":" + client->get_nickname() + "!" + client->get_hostmask();
-	server->msg_to_client(client....)
-	currentChannel->second->msg_to_channel(client....)
+	std::string finalMessage = ":" + client->get_nickname() + "!" + client->get_hostmask();
+	int i = 3
+	
+	finalMessage += (" MODE " + modeChanges);
+	while(tokens[i])
+	{
+		finalMessage += (" " + tokens[i]);
+		i++; 
+	} 
+	server->msg_to_client(client->get_fd(), finalMessage);
+	currentChannel->second->msg_to_channel(client->get_fd(), finalMessage);
 }
