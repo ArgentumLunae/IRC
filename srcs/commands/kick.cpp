@@ -6,7 +6,7 @@
 /*   By: ahorling <ahorling@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/26 17:37:48 by ahorling      #+#    #+#                 */
-/*   Updated: 2024/03/27 17:25:57 by ahorling      ########   odam.nl         */
+/*   Updated: 2024/03/29 16:24:08 by ahorling      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,8 @@ void	kick_command(Client *client, std::vector<std::string> tokens, Server *serve
 
 		if (toKick == nullptr)
 		{
-			send_response_message(client, ERR_USERNOTINCHANNEL, kickedChannel, server);
+			std::string specifics = toKick->get_nickname() + " " + kickedChannel;
+			send_response_message(client, ERR_USERNOTINCHANNEL, specifics, server);
 			continue;
 		}
 

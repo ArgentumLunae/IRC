@@ -10,12 +10,13 @@ Channel::Channel(std::string name, Client* creator, Server* server) : _server(se
 	_name = name;
 	_topic = "";
 	_password = "";
-	_modes = MODE_TOP + MODE_LIM;
+	_modes = MODE_LIM;
 	_userlimit = server->get_config().get_maxClients();
 	_owner = creator;
 	_clients = std::vector<Client*>{creator};
 	_partedClients = std::vector<Client*>{};
 	_operators = std::vector<Client*>{creator};
+	_inviteOnly = false;
 }
 
 Channel::Channel(const Channel &copy) {
@@ -39,6 +40,7 @@ Channel &Channel::operator=(const Channel &copy)
 	_server = copy._server;
 	_owner = copy._owner;
 	_invitelist = copy._invitelist;
+	_inviteOnly = copy._inviteOnly;
 	return(*this);
 }
 
@@ -94,31 +96,38 @@ Client*	Channel::get_owner() const
 	return (_owner);
 }
 
+bool	Channel::get_inviteStatus() const
+{
+	return (_inviteOnly);
+}
+
+bool	Channel::get_topicStatus() const
+{
+	return (_modes & MODE_TOP);
+}
+
 ///SETTERS
 
 int	Channel::set_modes(uint8_t newmodes)
 {
-	_modes = newmodes;
+	_modes += newmodes;
 	return SUCCESS;
 }
 
-//do we need specific password settings/rules that we need to abide by?
-int	Channel::set_password(std::string password, Client* client)
+int Channel::unset_mode(uint8_t newmodes)
 {
-	if (client == nullptr)
-		return (FAILURE);
-	if (check_operator_priv(client) == false)
-		return (FAILURE);
+	_modes -= newmodes;
+	return SUCCESS;
+}
+
+int	Channel::set_password(std::string password)
+{
 	_password = password;
 	return (SUCCESS);
 }
 
-int Channel::set_limit(size_t limit, Client* client)
+int Channel::set_limit(int limit)
 {
-	if (client == nullptr)
-		return (FAILURE);
-	if (check_operator_priv(client) == false)
-		return (FAILURE);
 	_userlimit = limit;
 	return (SUCCESS);
 }
@@ -126,6 +135,18 @@ int Channel::set_limit(size_t limit, Client* client)
 int	Channel::set_topic(std::string topic)
 {
 	_topic = topic;
+	return (SUCCESS);
+}
+
+bool	Channel::set_topicStatus(bool flag)
+{
+	_topicStatus = flag;
+	return (SUCCESS);
+}
+
+bool	Channel::set_inviteOnly(bool flag)
+{
+	_inviteOnly = flag;
 	return (SUCCESS);
 }
 
@@ -223,6 +244,19 @@ int	Channel::remove_operator(Client* client)
 			_operators.push_back(_partedClients.front());
 	}
 	return SUCCESS;
+}
+
+int Channel::add_operator(Client* client)
+{
+	int clientPos;
+
+	if (client == nullptr)
+		return FAILURE;
+	clientPos = client_is_operator(client);
+	if (clientPos >= 0)
+		return SUCCESS;
+	_operators.push_back(client);
+	return FAILURE;
 }
 
 int Channel::is_invited(Client* client)
@@ -326,4 +360,16 @@ int		Channel::kick(Client *client, Client* kicker)
 		return FAILURE;
 	client->removed_from_channel(this);
 	return SUCCESS;
+}
+
+int		Channel::addInviteList(Client *client)
+{
+	if (is_invited(client) > 0)
+		return SUCCESS;
+	else
+	{
+		_invitelist.push_back(client);
+		return SUCCESS;
+	}
+	return FAILURE;
 }

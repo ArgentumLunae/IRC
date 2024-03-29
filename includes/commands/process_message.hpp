@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/01/31 16:56:07 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/26 17:52:31 by ahorling      ########   odam.nl         */
+/*   Updated: 2024/03/28 16:56:52 by ahorling      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@ void	part_command(Client *client, std::vector<std::string> tokens, Server *serve
 void	list_names(Client *client, std::vector<std::string> tokens, Server *server);
 void	topic_command(Client *client, std::vector<std::string> tokens, Server *server);
 void	kick_command(Client *client, std::vector<std::string> tokens, Server *server);
+void	invite_command(Client *client, std::vector<std::string> tokens, Server *server);
+void	change_mode(Client *client, std::vector<std::string> tokens, Server *server);
 
 void	private_message(Client *client, std::vector<std::string> tokens, Server *server);
 
