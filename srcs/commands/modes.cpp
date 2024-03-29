@@ -6,7 +6,7 @@
 /*   By: ahorling <ahorling@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/28 16:41:43 by ahorling      #+#    #+#                 */
-/*   Updated: 2024/03/29 17:23:34 by ahorling      ########   odam.nl         */
+/*   Updated: 2024/03/29 18:39:55 by ahorling      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 
 //ALL THE DIFFERENT MODE COMMANDS GO HERE
 
-void	toggleInviteOnly(char toggle, Channel* channel)
+std::string	toggleInviteOnly(char toggle, Channel* channel)
 {
 	if (toggle == '+' && channel->get_inviteStatus() == true)
 		return;
@@ -39,7 +39,7 @@ void	toggleInviteOnly(char toggle, Channel* channel)
 		return;
 }
 
-void	toggleTopicRestriction(char toggle, Channel* channel)
+std::string	toggleTopicRestriction(char toggle, Channel* channel)
 {
 	if (toggle == '+' && channel->get_topicStatus() == true)
 		return;
@@ -59,7 +59,7 @@ void	toggleTopicRestriction(char toggle, Channel* channel)
 		return;
 }
 
-void	changePassword(char toggle, std::string newPass, Channel* channel)
+std::string	changePassword(char toggle, std::string newPass, Channel* channel)
 {
 	if (toggle == '-')
 	{
@@ -78,7 +78,7 @@ void	changePassword(char toggle, std::string newPass, Channel* channel)
 	}
 }
 
-void	setUserLimit(char toggle, std::string newLimit, Channel* channel)
+std::string	setUserLimit(char toggle, std::string newLimit, Channel* channel)
 {
 	if (toggle == '-')
 	{
@@ -99,7 +99,7 @@ void	setUserLimit(char toggle, std::string newLimit, Channel* channel)
 
 }
 
-void	 promoteOperator(char toggle, std::string toPromote, Channel* channel)
+std::string	 promoteOperator(char toggle, std::string toPromote, Channel* channel)
 {
 	Client* target = nullptr;
 	std::vector<Client*> clientList = currentChannel->second->get_clients();
@@ -160,6 +160,8 @@ std::map<char, char>	split_modes(std::string tokens)
 void	change_mode(Client *client, std::vector<std::string> tokens, Server *server)
 {
 	std::map<char, char> modesList;
+	std::string modePrefix;
+	std::string modeChanges;
 
 	//If there are only 2 passed paramaters in the command, send the current list of modes. if channel send channel commands
 	if (tokens.size() == 2)
@@ -187,8 +189,41 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 		return;
 	}
 
-	if (tokens.size() == 3)
+	// if (tokens.size() == 3)
+	// {
+	// 	modesList = split_modes(tokens[2]);
+	// 	if (modesList.empty())
+	// 		return;
+	// 	for (std::map<char, char>::iterator modeitr = modesList.begin(); modeitr != clientList.end(); ++modeitr)
+	// 	{
+	// 		switch (modeitr->first)
+	// 		{
+	// 			case "i":
+	// 				toggleInviteOnly(modeitr->second, currentChannel->second);
+	// 				break;
+	// 			case "t":
+	// 				toggleTopicRestriction(modeitr->second, currentChannel->second);
+	// 				break;
+	// 			case "k":
+	// 				changePassword(modeitr->second, nullptr, currentChannel->second);
+	// 				break;
+	// 			case "l":
+	// 				setUserLimit(modeitr->second, nullptr, currentChannel->second);
+	// 				break;
+	// 			case "o":
+	// 				promoteOperator(modeitr->second, nullptr, currentChannel->second);
+	// 				break;
+	// 			default:
+	// 				send_response_message(client, ERR_UNKNOWNMODE, modeitr->first);
+	// 		}
+	// 	}
+	// 	return;
+	// }
+
+	if (tokens.size() >= 3)
 	{
+		int count = 0;
+
 		modesList = split_modes(tokens[2]);
 		if (modesList.empty())
 			return;
@@ -203,70 +238,41 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 					toggleTopicRestriction(modeitr->second, currentChannel->second);
 					break;
 				case "k":
-					changePassword(modeitr->second, nullptr, currentChannel->second);
+					if (modeitr->second == '-')
+						changePassword(modeitr->second, nullptr, currentChannel->second);
+					else
+					{
+						if (!token[3 + count])
+							return;
+						changePassword(modeitf->second, token[3 + count], currentChannel->second);
+						count++;
+					}
 					break;
 				case "l":
-					setUserLimit(modeitr->second, nullptr, currentChannel->second);
+					if (modeitr->second == '-')
+						setUserLimit(modeitr->second, nullptr, currentChannel->second);
+					else
+					{
+						if (!token[3 + count])
+							return;
+						setUserLimit(modeitr->second, token[3 + count], currentChannel->second);
+						count++;
+					}
 					break;
 				case "o":
-					promoteOperator(modeitr->second, nullptr, currentChannel->second);
+					if (!token[3 + count])
+						return;
+					promoteOperator(modeitr->second, token[3 + count], currentChannel->second);
+					count++;
 					break;
 				default:
 					send_response_message(client, ERR_UNKNOWNMODE, modeitr->first);
 			}
 		}
-		return;
-	}
-
-	if (tokens.size() > 3)
-	{
-		int count = 0;
-
-		modesList = split_modes(tokens[2]);
-		if (modesList.empty())
-			return;
-		switch (modeitr->first)
-		{
-			case "i":
-				toggleInviteOnly(modeitr->second, currentChannel->second);
-				break;
-			case "t":
-				toggleTopicRestriction(modeitr->second, currentChannel->second);
-				break;
-			case "k":
-				if (modeitr->second == '-')
-					changePassword(modeitr->second, nullptr, currentChannel->second);
-				else
-				{
-					if (!token[3 + count])
-						return;
-					changePassword(modeitf->second, token[3 + count], currentChannel->second);
-					count++;
-				}
-				break;
-			case "l":
-				if (modeitr->second == '-')
-					setUserLimit(modeitr->second, nullptr, currentChannel->second);
-				else
-				{
-					if (!token[3 + count])
-						return;
-					setUserLimit(modeitr->second, token[3 + count], currentChannel->second);
-					count++;
-				}
-				break;
-			case "o":
-				if (!token[3 + count])
-					return;
-				promoteOperator(modeitr->second, token[3 + count], currentChannel->second);
-				count++;
-				break;
-			default:
-				send_response_message(client, ERR_UNKNOWNMODE, modeitr->first);
-		}
 	}
 
 	//Once finished with tasks, send a response message to all clients with all the successfully sent mode changes
+	modePrefix = ":" + client->get_nickname() + "!" + client->get_hostmask();
 	server->msg_to_client(client....)
 	currentChannel->second->msg_to_channel(client....)
 }
