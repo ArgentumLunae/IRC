@@ -183,8 +183,8 @@ int	Channel::client_rejoin(Client* client)
 	{
 		if (*iter != client)
 			continue ;
-		join_command(client, std::vector<std::string>{"part", _name, _password}, _server);
 		_partedClients.erase(iter);
+		join_command(client, std::vector<std::string>{"JOIN", _name, _password}, _server);
 		std::cout << "Client #" << client->get_fd() << " has rejoined " << _name << std::endl;
 		return SUCCESS;
 	}
@@ -279,7 +279,7 @@ int	Channel::remove_invite(Client* client)
 		return FAILURE;
 	clientPos = is_invited(client);
 	if (clientPos >= 0)
-		_invitelist.erase(_clients.begin() + clientPos);
+		_invitelist.erase(_invitelist.begin() + clientPos);
 	return SUCCESS;
 }
 
