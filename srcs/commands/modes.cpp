@@ -6,7 +6,7 @@
 /*   By: ahorling <ahorling@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/28 16:41:43 by ahorling      #+#    #+#                 */
-/*   Updated: 2024/03/29 19:58:57 by ahorling      ########   odam.nl         */
+/*   Updated: 2024/03/29 20:07:30 by ahorling      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 
 //ALL THE DIFFERENT MODE COMMANDS GO HERE
 
-void	toggleInviteOnly(char toggle, Channel* channel)
+std::string	toggleInviteOnly(char toggle, Channel* channel)
 {
 	if (toggle == '+' && channel->get_inviteStatus() == true)
 		return "";
@@ -39,7 +39,7 @@ void	toggleInviteOnly(char toggle, Channel* channel)
 		return "";
 }
 
-void	toggleTopicRestriction(char toggle, Channel* channel)
+std::string	toggleTopicRestriction(char toggle, Channel* channel)
 {
 	if (toggle == '+' && channel->get_topicStatus() == true)
 		return "";
@@ -59,7 +59,7 @@ void	toggleTopicRestriction(char toggle, Channel* channel)
 		return "";
 }
 
-void	changePassword(char toggle, std::string newPass, Channel* channel)
+std::string	changePassword(char toggle, std::string newPass, Channel* channel)
 {
 	if (toggle == '-')
 	{
@@ -81,11 +81,11 @@ void	changePassword(char toggle, std::string newPass, Channel* channel)
 	}
 }
 
-void	setUserLimit(char toggle, std::string newLimit, Channel* channel)
+std::string	setUserLimit(char toggle, std::string newLimit, Channel* channel)
 {
 	if (toggle == '-')
 	{
-		channel->set_limit(channel->get_server()->get_config().get_maxClients());
+		channel->set_limit((int)channel->get_server()->get_config().get_maxClients());
 		return ("-l");
 	}
 	else if (toggle == '+' && newLimit.empty())
@@ -105,7 +105,7 @@ void	setUserLimit(char toggle, std::string newLimit, Channel* channel)
 // std::string	 promoteOperator(char toggle, std::string toPromote, Channel* channel)
 // {
 // 	Client* target = nullptr;
-// 	std::vector<Client*> clientList = currentChannel->second->get_clients();
+// 	std::vector<Client*> clientList = channel->get_clients();
 
 // 	for (size_t j = 0; j < clientList.size(); j++)
 // 	{
@@ -235,13 +235,9 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 			switch (modeitr->first)
 			{
 				case 'i':
-					toggleInviteOnly(modeitr->second, currentChannel->second);
-				case "i":
 					modeChanges += toggleInviteOnly(modeitr->second, currentChannel->second);
 					break;
 				case 't':
-					toggleTopicRestriction(modeitr->second, currentChannel->second);
-				case "t":
 					modeChanges += toggleTopicRestriction(modeitr->second, currentChannel->second);
 					break;
 				case 'k':
