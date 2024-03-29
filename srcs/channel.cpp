@@ -10,7 +10,7 @@ Channel::Channel(std::string name, Client* creator, Server* server) : _server(se
 	_name = name;
 	_topic = "";
 	_password = "";
-	_modes = MODE_TOP + MODE_LIM;
+	_modes = MODE_LIM;
 	_userlimit = server->get_config().get_maxClients();
 	_owner = creator;
 	_clients = std::vector<Client*>{creator};
@@ -103,7 +103,7 @@ bool	Channel::get_inviteStatus() const
 
 bool	Channel::get_topicStatus() const
 {
-	return (_topicStatus);
+	return (_modes & MODE_TOP);
 }
 
 ///SETTERS

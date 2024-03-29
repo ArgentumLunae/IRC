@@ -6,7 +6,7 @@
 /*   By: ahorling <ahorling@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/28 16:41:43 by ahorling      #+#    #+#                 */
-/*   Updated: 2024/03/29 20:07:30 by ahorling      ########   odam.nl         */
+/*   Updated: 2024/03/29 20:28:29 by ahorling      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,12 @@ std::string	toggleInviteOnly(char toggle, Channel* channel)
 	else if (toggle == '-' && channel->get_inviteStatus() == true)
 	{
 		channel->set_inviteOnly(false);
-		channel->unset_modes(MODE_INV);
+		channel->unset_mode(MODE_INV);
 		return ("-i");
 	}
-	else if (toggle == '-' && chanel->getinviteStatus() == false)
+	else if (toggle == '-' && channel->get_inviteStatus() == false)
 		return "";
+	return "";
 }
 
 std::string	toggleTopicRestriction(char toggle, Channel* channel)
@@ -52,33 +53,31 @@ std::string	toggleTopicRestriction(char toggle, Channel* channel)
 	else if (toggle == '-' && channel ->get_topicStatus() == true)
 	{
 		channel->set_topicStatus(false);
-		channel->unset_modes(MODE_TOP);
+		channel->unset_mode(MODE_TOP);
 		return ("-t");
 	}
 	else if (toggle == '-' && channel ->get_topicStatus() == false)
 		return "";
+	return "";
 }
 
 std::string	changePassword(char toggle, std::string newPass, Channel* channel)
 {
 	if (toggle == '-')
 	{
-		// MAKE SURE TO SET PASSWORD MODE
 		channel->unset_mode(MODE_KEY);
 		channel->set_password("");
 		return ("-k");
 	}
 	else if (toggle == '+' && newPass.empty())
-		return;
+		return ("");
 	else if (toggle == '+' && !newPass.empty())
 	{
 		channel->set_modes(MODE_KEY);
 		channel->set_password(newPass);
-		return;
-		channel->set_mode(MODE_KEY);
-		channel->setpassword(newPass);
 		return ("+k");
 	}
+	return "";
 }
 
 std::string	setUserLimit(char toggle, std::string newLimit, Channel* channel)
@@ -89,51 +88,52 @@ std::string	setUserLimit(char toggle, std::string newLimit, Channel* channel)
 		return ("-l");
 	}
 	else if (toggle == '+' && newLimit.empty())
-		return;
+		return ("");
 	else if (toggle == '+' && !newLimit.empty())
 	{
 		int limit = std::stoi(newLimit);
 		//check to see if it is an actual number
 		if (limit < 0 || limit > (int)channel->get_server()->get_config().get_maxClients())
-			return;
+			return ("");
 		channel->set_limit(limit);
 		return ("+l");
 	}
-
+	return "";
 }
 
-// std::string	 promoteOperator(char toggle, std::string toPromote, Channel* channel)
-// {
-// 	Client* target = nullptr;
-// 	std::vector<Client*> clientList = channel->get_clients();
+std::string	 promoteOperator(char toggle, std::string toPromote, Channel* channel, Client* client, Server* server)
+{
+	Client* target = nullptr;
+	std::vector<Client*> clientList = channel->get_clients();
 
-// 	for (size_t j = 0; j < clientList.size(); j++)
-// 	{
-// 		if (clientList[j]->get_nickname() == kickedNames[i])
-// 		{
-// 			target = clientList[j];
-// 			break;
-// 		}
-// 	}
-// 	if (target == nullptr)
-// 	{
-// 		send_response_message(client, ERR_USERNOTINCHANNEL, toPromote + " " + channel->get_name(), server);
-// 		continue;
-// 	}
+	for (size_t j = 0; j < clientList.size(); j++)
+	{
+		if (clientList[j]->get_nickname() == toPromote)
+		{
+			target = clientList[j];
+			break;
+		}
+	}
+	if (target == nullptr)
+	{
+		send_response_message(client, ERR_USERNOTINCHANNEL, toPromote + " " + channel->get_name(), server);
+		return "";
+	}
 
-// 	if (toggle == '-')
-// 	{
-// 		channel->remove.operator(target);
-// 		return;
-// 	}
-// 	else if (toggle == '+' && channel->client_is_operator(target) >= 0)
-// 		return;
-// 	else if (toggle =='+' && channel->client_is_operator(target < 0))
-// 	{
-// 		channel->add_operator(target);
-// 		return;
-// 	}
-// }
+	if (toggle == '-')
+	{
+		channel->remove_operator(target);
+		return "-o";
+	}
+	else if (toggle == '+' && channel->client_is_operator(target) >= 0)
+		return "";
+	else if (toggle =='+' && channel->client_is_operator(target) < 0)
+	{
+		channel->add_operator(target);
+		return "+o";
+	}
+	return "";
+}
 
 //END COMMAND FUNCTIONS
 
@@ -170,6 +170,7 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 	if (tokens.size() == 2)
 	{
 		server->msg_to_client(client->get_fd(), server->get_config().get_channelModes());
+		return;
 	}
 
 	//check to see if stated channel exists, and if they have privs in that channel.
@@ -262,12 +263,12 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 						count++;
 					}
 					break;
-				// case 'o':
-				// 	if (!tokens[3 + count])
-				// 		return;
-				// 	modeChanges += promoteOperator(modeitr->second, tokens[3 + count], currentChannel->second);
-				// 	count++;
-				// 	break;
+				case 'o':
+					if (tokens[3 + count] == *tokens.end())
+						return;
+					modeChanges += promoteOperator(modeitr->second, tokens[3 + count], currentChannel->second, client, server);
+					count++;
+					break;
 				default:
 					send_response_message(client, ERR_UNKNOWNMODE, {modeitr->first}, server);
 			}
@@ -276,14 +277,14 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 
 	//Once finished with tasks, send a response message to all clients with all the successfully sent mode changes
 	std::string finalMessage = ":" + client->get_nickname() + "!" + client->get_hostmask();
-	int i = 3
+	int i = 3;
 	
 	finalMessage += (" MODE " + modeChanges);
-	while(tokens[i])
+	while(tokens[i] != *tokens.end())
 	{
 		finalMessage += (" " + tokens[i]);
 		i++; 
 	} 
 	server->msg_to_client(client->get_fd(), finalMessage);
-	currentChannel->second->msg_to_channel(client->get_fd(), finalMessage);
+	currentChannel->second->msg_to_channel(client, finalMessage);
 }
