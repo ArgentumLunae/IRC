@@ -6,7 +6,7 @@
 /*   By: ahorling <ahorling@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/28 16:41:43 by ahorling      #+#    #+#                 */
-/*   Updated: 2024/03/29 19:14:45 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/29 20:05:48 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,6 @@ void	changePassword(char toggle, std::string newPass, Channel* channel)
 {
 	if (toggle == '-')
 	{
-		// MAKE SURE TO SET PASSWORD MODE
 		channel->unset_mode(MODE_KEY);
 		channel->set_password("");
 		return;
@@ -82,7 +81,7 @@ void	setUserLimit(char toggle, std::string newLimit, Channel* channel)
 {
 	if (toggle == '-')
 	{
-		channel->set_limit(channel->get_server()->get_config().get_maxClients());
+		channel->set_limit((int)channel->get_server()->get_config().get_maxClients());
 		return;
 	}
 	else if (toggle == '+' && newLimit.empty())
@@ -239,7 +238,7 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 					break;
 				case 'k':
 					if (modeitr->second == '-')
-						changePassword(modeitr->second, nullptr, currentChannel->second);
+						changePassword(modeitr->second, "", currentChannel->second);
 					else
 					{
 						if (tokens[3 + count] == *tokens.end())
@@ -250,7 +249,7 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 					break;
 				case 'l':
 					if (modeitr->second == '-')
-						setUserLimit(modeitr->second, nullptr, currentChannel->second);
+						setUserLimit(modeitr->second, "", currentChannel->second);
 					else
 					{
 						if (tokens[3 + count] == *tokens.end())
