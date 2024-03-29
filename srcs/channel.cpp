@@ -245,7 +245,7 @@ int	Channel::remove_invite(Client* client)
 		return FAILURE;
 	clientPos = is_invited(client);
 	if (clientPos >= 0)
-		_invitelist.erase(_clients.begin() + clientPos);
+		_invitelist.erase(_invitelist.begin() + clientPos);
 	return SUCCESS;
 }
 

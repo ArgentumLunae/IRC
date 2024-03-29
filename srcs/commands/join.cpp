@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/09 15:37:20 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/04 18:48:59 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/29 16:48:01 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ static bool	pass_channel_modes(Client *client, Channel *channel, Server *server)
 		send_response_message(client, ERR_CHANNELISFULL, channel->get_name(), server);
 		return false;
 	}
-	if (channel->get_modes() & MODE_INV) //Add a check to see if the client is on the invite list if JOIN is used alongside INVITE
+	if (channel->get_modes() & MODE_INV && !channel->is_invited(client)) //Add a check to see if the client is on the invite list if JOIN is used alongside INVITE
 	{
 		send_response_message(client, ERR_INVITEONLYCHAN, channel->get_name(), server);
 		return false;
