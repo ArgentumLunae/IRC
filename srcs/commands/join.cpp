@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/09 15:37:20 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/29 17:19:46 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/29 19:29:00 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,8 @@ static bool	check_channel_mask(Client *client, std::string channelName, Server *
 
 static bool check_channel_key(Client *client, Channel *channel, std::string key, Server *server)
 {
+	std::cout << "\t" << (channel->get_modes() & MODE_KEY) << " | " << (!channel->get_password().empty()) << " | " << key << " == " << channel->get_password() << std::endl;
+
 	if (channel->get_modes() & MODE_KEY && !channel->get_password().empty() && key != channel->get_password())
 	{
 		send_response_message(client, ERR_BADCHANNELKEY, "", server);
@@ -58,7 +60,6 @@ void	join_command(Client *client, std::vector<std::string> tokens, Server *serve
 	Channel	*currentChannel;
 	size_t	idx = 0;
 
-	std::cout << "join_command()" << std::endl;
 	if (tokens.size() < 2)
 	{
 		send_response_message(client, ERR_NEEDMOREPARAMS, "JOIN ", server);
@@ -77,7 +78,11 @@ void	join_command(Client *client, std::vector<std::string> tokens, Server *serve
 			currentChannel = server->get_channel(*iter);
 		if (pass_channel_modes(client, currentChannel, server) == false)
 			continue ;
-		if (idx < channelKeys.size() && check_channel_key(client, currentChannel, channelKeys[idx], server) == false)
+		if (idx < channelKeys.size()) {
+			if (check_channel_key(client, currentChannel, channelKeys[idx], server) == false)
+				continue ;
+		}
+		else if(check_channel_key(client, currentChannel, "", server) == false)
 			continue ;
 		if (!currentChannel->add_client(client))
 		{
