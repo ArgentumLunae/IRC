@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/14 18:06:52 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/04 17:48:32 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/30 21:13:47 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ static std::string	string_nicknames(std::vector<Client*> clientList, Channel *ch
 			prefix = "@";
 		nickList += prefix + (*iter)->get_nickname();
 	}
-	std::cout << nickList << std::endl;
 	return nickList;
 }
 

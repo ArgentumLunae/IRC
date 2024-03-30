@@ -30,8 +30,6 @@ class Channel
 		std::vector<Client*>	_operators;
 		std::vector<Client*>	_invitelist;
 		size_t		_userlimit;
-		bool		_inviteOnly;
-		bool		_topicStatus;
 
 		bool	check_operator_priv(Client *client);
 
@@ -57,8 +55,6 @@ class Channel
 		bool					get_topicStatus() const;
 
         //Setters
-		bool	set_inviteOnly(bool flag);
-		bool	set_topicStatus(bool flag);
 		int		set_modes(uint8_t newmodes);
 		int 	unset_mode(uint8_t newmodes);
 		int		set_password(std::string password);
@@ -79,6 +75,7 @@ class Channel
 		int		client_was_in_channel(Client* client);
 		int		client_is_operator(Client* client);
 		int		addInviteList(Client* client);
+		std::string	string_modes(void) const;
 
 		//Others (User actions)
 		int		leave_channel(Client* client);
