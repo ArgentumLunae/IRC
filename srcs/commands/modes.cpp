@@ -6,7 +6,7 @@
 /*   By: ahorling <ahorling@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/28 16:41:43 by ahorling      #+#    #+#                 */
-/*   Updated: 2024/03/30 19:05:55 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/30 21:09:32 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,52 +194,12 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 	std::map<std::string, Channel*>::iterator currentChannel;
 
 	if (server->get_channelList()->empty())
-	{
-		send_response_message(client, ERR_NOSUCHCHANNEL, tokens[1], server);
-		return;
-	}
+		return send_response_message(client, ERR_NOSUCHCHANNEL, tokens[1], server);
 	currentChannel = server->get_channelList()->find(tokens[1]);
 	if (currentChannel == server->get_channelList()->end())
-	{
-		send_response_message(client, ERR_NOSUCHCHANNEL, tokens[1], server);
-		return;
-	}
+		return send_response_message(client, ERR_NOSUCHCHANNEL, tokens[1], server);
 	if (currentChannel->second->client_is_operator(client) < 0)
-	{
-		send_response_message(client, ERR_CHANOPRIVSNEEDED, tokens[1], server);
-		return;
-	}
-
-	// if (tokens.size() == 3)
-	// {
-	// 	modesList = split_modes(tokens[2]);
-	// 	if (modesList.empty())
-	// 		return;
-	// 	for (std::map<char, char>::iterator modeitr = modesList.begin(); modeitr != clientList.end(); ++modeitr)
-	// 	{
-	// 		switch (modeitr->first)
-	// 		{
-	// 			case "i":
-	// 				toggleInviteOnly(modeitr->second, currentChannel->second);
-	// 				break;
-	// 			case "t":
-	// 				toggleTopicRestriction(modeitr->second, currentChannel->second);
-	// 				break;
-	// 			case "k":
-	// 				changePassword(modeitr->second, nullptr, currentChannel->second);
-	// 				break;
-	// 			case "l":
-	// 				setUserLimit(modeitr->second, nullptr, currentChannel->second);
-	// 				break;
-	// 			case "o":
-	// 				promoteOperator(modeitr->second, nullptr, currentChannel->second);
-	// 				break;
-	// 			default:
-	// 				send_response_message(client, ERR_UNKNOWNMODE, modeitr->first);
-	// 		}
-	// 	}
-	// 	return;
-	// }
+		return send_response_message(client, ERR_CHANOPRIVSNEEDED, tokens[1], server);
 
 	if (tokens.size() >= 3)
 	{
