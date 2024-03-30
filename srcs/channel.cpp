@@ -10,13 +10,12 @@ Channel::Channel(std::string name, Client* creator, Server* server) : _server(se
 	_name = name;
 	_topic = "";
 	_password = "";
-	_modes = MODE_LIM;
+	_modes = MODE_TOP;
 	_userlimit = server->get_config().get_maxClients();
 	_owner = creator;
 	_clients = std::vector<Client*>{creator};
 	_partedClients = std::vector<Client*>{};
 	_operators = std::vector<Client*>{creator};
-	_inviteOnly = false;
 }
 
 Channel::Channel(const Channel &copy) {
@@ -40,7 +39,6 @@ Channel &Channel::operator=(const Channel &copy)
 	_server = copy._server;
 	_owner = copy._owner;
 	_invitelist = copy._invitelist;
-	_inviteOnly = copy._inviteOnly;
 	return(*this);
 }
 
@@ -98,7 +96,7 @@ Client*	Channel::get_owner() const
 
 bool	Channel::get_inviteStatus() const
 {
-	return (_inviteOnly);
+	return (_modes & MODE_INV);
 }
 
 bool	Channel::get_topicStatus() const
@@ -135,18 +133,6 @@ int Channel::set_limit(int limit)
 int	Channel::set_topic(std::string topic)
 {
 	_topic = topic;
-	return (SUCCESS);
-}
-
-bool	Channel::set_topicStatus(bool flag)
-{
-	_topicStatus = flag;
-	return (SUCCESS);
-}
-
-bool	Channel::set_inviteOnly(bool flag)
-{
-	_inviteOnly = flag;
 	return (SUCCESS);
 }
 
@@ -372,4 +358,19 @@ int		Channel::addInviteList(Client *client)
 		return SUCCESS;
 	}
 	return FAILURE;
+}
+
+std::string	Channel::string_modes(void) const
+{
+	std::string mode_str = "";
+
+	if (_modes & MODE_INV)
+		mode_str += "i";
+	if (_modes & MODE_KEY)
+		mode_str += "k";
+	if (_modes & MODE_LIM)
+		mode_str += "l";
+	if (_modes & MODE_TOP)
+		mode_str += "t";
+	return mode_str;
 }

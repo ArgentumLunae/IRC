@@ -141,14 +141,12 @@ void	Client::set_registered(bool state) {
 
 int			Client::add_channel(Channel *channel)
 {
-	std::cout << "Client::add_channel()" << std::endl;
 	if (!is_in_channel(channel->get_name()))
 	{
 		_channelList.push_back(channel);
 		std::cout << _channelList.front()->get_name() << std::endl;
 		return SUCCESS;
 	}
-	std::cout << "Client already in channel" << std::endl;
 	return FAILURE;
 }
 
