@@ -19,9 +19,13 @@ void	Config::config_from_file(std::string filePath)
 	currentLine = split(line, " ");
 	while (!currentLine[0].empty())
 	{
-		if (currentLine.size() < 3)
+		if (currentLine.size() < 3 || currentLine[2].empty())
+		{
+			fileStream.getline(line, 256);
+			currentLine = split(line, " ");
 			continue ;
-		else if (currentLine[0] == "HOST")
+		}
+		if (currentLine[0] == "HOST")
 			_host = currentLine[2];
 		else if (currentLine[0] == "NAME")
 			_serverName = currentLine[2];
@@ -30,7 +34,14 @@ void	Config::config_from_file(std::string filePath)
 		else if (currentLine[0] == "CMODES")
 			_channelModes = currentLine[2];
 		else if (currentLine[0] == "MAX_CLIENTS")
-			_maxClients = std::stoi(currentLine[2]);
+		{
+			try {
+				_maxClients = std::stoi(currentLine[2]);
+			}
+			catch (...) {
+				_maxClients = 4096;
+			}
+		}
 		fileStream.getline(line, 256);
 		currentLine = split(line, " ");
 	}
@@ -39,7 +50,7 @@ void	Config::config_from_file(std::string filePath)
 
 Config::Config()
 {
-	_host = "default";
+	_host = "127.0.0.1";
 	_serverName = "default";
 	_userModes = "";
 	_channelModes = "";

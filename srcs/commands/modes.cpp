@@ -6,7 +6,7 @@
 /*   By: ahorling <ahorling@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/28 16:41:43 by ahorling      #+#    #+#                 */
-/*   Updated: 2024/03/29 20:28:29 by ahorling      ########   odam.nl         */
+/*   Updated: 2024/03/30 17:10:38 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,9 +91,15 @@ std::string	setUserLimit(char toggle, std::string newLimit, Channel* channel)
 		return ("");
 	else if (toggle == '+' && !newLimit.empty())
 	{
-		int limit = std::stoi(newLimit);
+		int limit = 0;
+		try {
+			limit = std::stoi(newLimit);
+		}
+		catch (...) {
+			return "";
+		}
 		//check to see if it is an actual number
-		if (limit < 0 || limit > (int)channel->get_server()->get_config().get_maxClients())
+		if (limit <= 0 || limit > (int)channel->get_server()->get_config().get_maxClients())
 			return ("");
 		channel->set_limit(limit);
 		return ("+l");
@@ -137,9 +143,9 @@ std::string	 promoteOperator(char toggle, std::string toPromote, Channel* channe
 
 //END COMMAND FUNCTIONS
 
-std::map<char, char>	split_modes(std::string tokens)
+std::vector<std::pair<char, char>>	split_modes(std::string tokens)
 {
-	std::map<char, char> modesList;
+	std::vector<std::pair<char, char>> modesList;
 	char sign = '0';
 	char flag = '0';
 
@@ -154,7 +160,7 @@ std::map<char, char>	split_modes(std::string tokens)
 		else
 			flag = tokens[i];
 		if (sign != '0' && flag != '0')
-			modesList.insert(std::make_pair(flag, sign));
+			modesList.push_back(std::make_pair(flag, sign));
 	}
 	return (modesList);
 }
@@ -162,14 +168,14 @@ std::map<char, char>	split_modes(std::string tokens)
 
 void	change_mode(Client *client, std::vector<std::string> tokens, Server *server)
 {
-	std::map<char, char> modesList;
+	std::vector<std::pair<char, char>> modesList;
 	std::string modePrefix;
 	std::string modeChanges;
 
 	//If there are only 2 passed paramaters in the command, send the current list of modes. if channel send channel commands
 	if (tokens.size() == 2)
 	{
-		server->msg_to_client(client->get_fd(), server->get_config().get_channelModes());
+		server->msg_to_client(client->get_fd(), ":" + client->get_nickname() + "!" + client->get_hostmask() + " " + tokens[1] + " :" + server->get_config().get_channelModes());
 		return;
 	}
 
@@ -231,7 +237,7 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 		modesList = split_modes(tokens[2]);
 		if (modesList.empty())
 			return;
-		for (std::map<char, char>::iterator modeitr = modesList.begin(); modeitr != modesList.end(); ++modeitr)
+		for (std::vector<std::pair<char, char>>::iterator modeitr = modesList.begin(); modeitr != modesList.end(); ++modeitr)
 		{
 			switch (modeitr->first)
 			{

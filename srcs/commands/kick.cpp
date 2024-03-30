@@ -6,7 +6,7 @@
 /*   By: ahorling <ahorling@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/26 17:37:48 by ahorling      #+#    #+#                 */
-/*   Updated: 2024/03/29 16:24:08 by ahorling      ########   odam.nl         */
+/*   Updated: 2024/03/30 16:21:31 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,26 +50,14 @@ void	kick_command(Client *client, std::vector<std::string> tokens, Server *serve
 	std::map<std::string, Channel*>::iterator currentChannel;
 
 	if (server->get_channelList()->empty())
-	{
-		send_response_message(client, ERR_NOSUCHCHANNEL, kickedChannel, server);
-		return;
-	}
+		return send_response_message(client, ERR_NOSUCHCHANNEL, kickedChannel, server);
 	currentChannel = server->get_channelList()->find(kickedChannel);
 	if (currentChannel == server->get_channelList()->end())
-	{
-		send_response_message(client, ERR_NOSUCHCHANNEL, kickedChannel, server);
-		return;
-	}
+		return send_response_message(client, ERR_NOSUCHCHANNEL, kickedChannel, server);
 	if (!client->is_in_channel(kickedChannel))
-	{
-		send_response_message(client, ERR_NOTONCHANNEL, kickedChannel, server);
-		return;
-	}
+		return send_response_message(client, ERR_NOTONCHANNEL, kickedChannel, server);
 	if (currentChannel->second->client_is_operator(client) < 0)
-	{
-		send_response_message(client, ERR_CHANOPRIVSNEEDED, kickedChannel, server);
-		return;
-	}
+		return send_response_message(client, ERR_CHANOPRIVSNEEDED, kickedChannel, server);
 
 	//remove each named client from the channel
 
@@ -89,7 +77,7 @@ void	kick_command(Client *client, std::vector<std::string> tokens, Server *serve
 
 		if (toKick == nullptr)
 		{
-			std::string specifics = toKick->get_nickname() + " " + kickedChannel;
+			std::string specifics = kickedNames[i] + " " + kickedChannel;
 			send_response_message(client, ERR_USERNOTINCHANNEL, specifics, server);
 			continue;
 		}
@@ -98,8 +86,9 @@ void	kick_command(Client *client, std::vector<std::string> tokens, Server *serve
 		if (!kickMessage.empty())
 			msg += " " + kickMessage;
 		currentChannel->second->kick(toKick, client);
-		server->msg_to_client(toKick->get_fd(), kickPrefix + " KICK "+ kickedChannel + " "  + kickedNames[i] +  " :"+ kickMessage);
 		server->msg_to_client(client->get_fd(), kickPrefix + " KICK "+ kickedChannel + " "  + kickedNames[i] +  " :"+ kickMessage);
 		currentChannel->second->msg_to_channel(client, kickPrefix + " KICK "+ kickedChannel + " "  + kickedNames[i] +  " :"+ kickMessage);
+		if (server->get_channel(kickedChannel) != nullptr)
+			server->msg_to_client(toKick->get_fd(), kickPrefix + " KICK "+ kickedChannel + " "  + kickedNames[i] +  " :"+ kickMessage);
 	}
 }

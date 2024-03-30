@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/06 14:31:18 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/30 14:57:19 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,6 @@ int		Server::init_server()
 		close(_serverSocket);
 		return FAILURE;
 	}
-	std::cout << "Server listening on port " << _port << std::endl;
 	
 	pollfd serverPoll;
 	serverPoll.fd = _serverSocket;
