@@ -6,7 +6,7 @@
 /*   By: ahorling <ahorling@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/28 16:41:43 by ahorling      #+#    #+#                 */
-/*   Updated: 2024/03/30 21:09:32 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/30 21:11:59 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,13 +21,11 @@
 
 std::string	toggleInviteOnly(char toggle, Channel* channel)
 {
-	std::cout << "toggleInviteOnly()" << std::endl;
 	if (toggle == '+' && channel->get_inviteStatus() == true)
 		return "";
 	else if (toggle == '+' && channel->get_inviteStatus() == false)
 	{
 		channel->set_modes(MODE_INV);
-		std::cout << "INVITE MODE SET" << std::endl;
 		return ("+i");
 	}
 	else if (toggle == '-' && channel->get_inviteStatus() == true)

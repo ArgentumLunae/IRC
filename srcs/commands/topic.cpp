@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/28 12:20:11 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/29 19:47:12 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/30 21:13:54 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ static void	change_topic(Client *client, Channel *channel, std::string newTopic,
 {
 	std::string reply;
 
-	std::cout << (channel->get_modes() & MODE_TOP) << std::endl;
 	if ((channel->get_modes() & MODE_TOP) && channel->client_is_operator(client) < 0)
 		return send_response_message(client, ERR_CHANOPRIVSNEEDED, channel->get_name(), server);
 	channel->set_topic(newTopic);

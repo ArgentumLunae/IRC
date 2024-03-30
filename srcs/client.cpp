@@ -144,7 +144,6 @@ int			Client::add_channel(Channel *channel)
 	if (!is_in_channel(channel->get_name()))
 	{
 		_channelList.push_back(channel);
-		std::cout << _channelList.front()->get_name() << std::endl;
 		return SUCCESS;
 	}
 	return FAILURE;
@@ -188,7 +187,6 @@ void			Client::leave_all_channels(void)
 	}
 	for (std::vector<Channel*>::iterator iter = _partedChannels.begin(); iter != _partedChannels.end(); iter = _partedChannels.begin())
 	{
-		std::cout << (*iter)->get_name() << std::endl;
 		(*iter)->remove_parted_client(this);
 		_partedChannels.erase(iter);
 		if ((*iter)->get_clients().empty()  && (*iter)->get_partedClients().empty())
