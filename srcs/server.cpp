@@ -6,7 +6,7 @@
 /*   By: mteerlin <mteerlin@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/02/05 17:20:56 by mteerlin      #+#    #+#                 */
-/*   Updated: 2024/03/30 14:57:19 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/31 13:07:28 by mteerlin      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,6 +192,8 @@ int	Server::incoming_data(size_t idx)
 		messages = split(buffer, '\n');
 		for (std::vector<std::string>::iterator iter = messages.begin(); iter != (messages.end() - 1); iter++)
 		{
+			if (iter == messages.end())
+				return FAILURE;
 			std::string currentMessage = *iter;
 			if (currentMessage.length() > 0 && !(currentMessage[0] == '\r'))
 			{
