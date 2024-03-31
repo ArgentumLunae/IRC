@@ -6,7 +6,7 @@
 /*   By: ahorling <ahorling@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/03/28 16:41:43 by ahorling      #+#    #+#                 */
-/*   Updated: 2024/03/30 21:11:59 by mteerlin      ########   odam.nl         */
+/*   Updated: 2024/03/31 13:43:03 by ahorling      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,9 +199,9 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 	if (currentChannel->second->client_is_operator(client) < 0)
 		return send_response_message(client, ERR_CHANOPRIVSNEEDED, tokens[1], server);
 
+	int count = 0;
 	if (tokens.size() >= 3)
 	{
-		int count = 0;
 
 		modesList = split_modes(tokens[2]);
 		if (modesList.empty())
@@ -255,7 +255,7 @@ void	change_mode(Client *client, std::vector<std::string> tokens, Server *server
 	int i = 3;
 	
 	finalMessage += (" MODE " + tokens[1] + " :" + modeChanges);
-	while(tokens[i] != *tokens.end())
+	while(tokens[i] != *tokens.end() && i <= 3 + count)
 	{
 		finalMessage += (" " + tokens[i]);
 		i++; 
